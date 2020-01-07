@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@src/*": ["src/*"],
+      "@entity/*": ["src/entity/*"],
+      "@resolvers/*": ["src/resolvers/*"]
+    }
+  }
+}
