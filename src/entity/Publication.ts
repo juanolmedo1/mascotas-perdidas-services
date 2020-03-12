@@ -43,7 +43,7 @@ export class Publication extends BaseEntity {
 
   @Field()
   @Column()
-  reward: boolean;
+  reward?: boolean;
 
   @Field(() => String)
   @Column("text")

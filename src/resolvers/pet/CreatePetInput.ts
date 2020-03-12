@@ -1,12 +1,5 @@
 import { InputType, Field } from "type-graphql";
-import {
-  PetCollarColor,
-  PetSize,
-  PetColor,
-  PetType,
-  PetGender,
-  Pet
-} from "@entity/Pet";
+import { PetSize, PetType, PetGender, Pet } from "@entity/Pet";
 
 @InputType()
 export class CreatePetInput implements Partial<Pet> {
@@ -17,13 +10,13 @@ export class CreatePetInput implements Partial<Pet> {
   gender: PetGender;
 
   @Field(() => String)
-  size: PetSize;
+  size?: PetSize;
 
-  @Field(() => String)
-  color: PetColor;
+  @Field(() => [String])
+  color: string[];
 
-  @Field(() => String)
-  collar: PetCollarColor;
+  @Field()
+  collar: boolean;
 
   @Field(() => [String])
   photosData: string[];

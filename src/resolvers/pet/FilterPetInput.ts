@@ -1,11 +1,5 @@
 import { InputType, Field } from "type-graphql";
-import {
-  PetType,
-  PetGender,
-  PetCollarColor,
-  PetSize,
-  PetColor
-} from "@entity/Pet";
+import { PetType, PetGender, PetSize } from "@entity/Pet";
 
 @InputType()
 export class FilterPetInput {
@@ -19,8 +13,8 @@ export class FilterPetInput {
   size?: PetSize[];
 
   @Field(() => [String], { nullable: true })
-  color?: PetColor[];
+  color?: string[];
 
-  @Field(() => [String], { nullable: true })
-  collar?: PetCollarColor[];
+  @Field(() => Boolean, { nullable: true })
+  collar?: boolean;
 }

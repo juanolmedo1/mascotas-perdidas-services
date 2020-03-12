@@ -1,7 +1,7 @@
 import { Service } from "typedi";
 import { Arg } from "type-graphql";
 import { CreatePetPhotoInput } from "@src/resolvers/pet/CreatePetPhotoInput";
-import { PetPhotoService } from "./PetPhotoService";
+import { PetPhotoService } from "@src/services/PetPhotoService";
 import { Pet } from "@entity/Pet";
 import { CreatePetInput } from "@src/resolvers/pet/CreatePetInput";
 import { UpdatePetInput } from "@src/resolvers/pet/UpdatePetInput";
