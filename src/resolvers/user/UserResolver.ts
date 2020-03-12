@@ -14,13 +14,16 @@ import { UpdateUserInput } from "@resolvers/user/UpdateUserInput";
 import { Service } from "typedi";
 import { UserService } from "@src/services/UserService";
 import { PublicationService } from "@src/services/PublicationService";
+import { ProfilePhoto } from "@src/entity/ProfilePhoto";
+import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 
 @Service()
 @Resolver(User)
 export class UserResolver implements ResolverInterface<User> {
   constructor(
     private userService: UserService,
-    private publicationService: PublicationService
+    private publicationService: PublicationService,
+    private profilePhotoService: ProfilePhotoService
   ) {}
 
   @Mutation(() => User)
@@ -59,5 +62,10 @@ export class UserResolver implements ResolverInterface<User> {
   @FieldResolver()
   async publications(@Root() user: User): Promise<Publication[]> {
     return this.publicationService.getUserPublications(user);
+  }
+
+  @FieldResolver()
+  async profilePicture(@Root() user: User): Promise<ProfilePhoto> {
+    return this.profilePhotoService.getOne(user.profilePictureId);
   }
 }

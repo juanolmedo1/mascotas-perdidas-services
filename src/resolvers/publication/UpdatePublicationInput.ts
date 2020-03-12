@@ -1,11 +1,27 @@
 import { InputType, Field } from "type-graphql";
-import { PublicationType, PetType, Publication } from "@src/entity/Publication";
+import { PublicationType, Publication } from "@src/entity/Publication";
+import { UpdatePetInput } from "@resolvers/pet/UpdatePetInput";
 
 @InputType()
 export class UpdatePublicationInput implements Partial<Publication> {
   @Field(() => String, { nullable: true })
   type?: PublicationType;
 
+  @Field(() => UpdatePetInput, { nullable: true })
+  petData?: UpdatePetInput;
+
   @Field(() => String, { nullable: true })
-  pet?: PetType;
+  province?: string;
+
+  @Field(() => String, { nullable: true })
+  location?: string;
+
+  @Field(() => String, { nullable: true })
+  phoneNumber?: string;
+
+  @Field(() => Boolean, { nullable: true })
+  reward?: boolean;
+
+  @Field(() => String, { nullable: true })
+  additionalInfo?: string;
 }

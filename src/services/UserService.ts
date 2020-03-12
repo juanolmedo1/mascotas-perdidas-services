@@ -4,14 +4,26 @@ import { CreateUserInput } from "@src/resolvers/user/CreateUserInput";
 import { User } from "@src/entity/User";
 import { UpdateUserInput } from "@src/resolvers/user/UpdateUserInput";
 import { Publication } from "@src/entity/Publication";
+import { CreateProfilePhotoInput } from "@src/resolvers/user/CreateProfilePhotoInput";
+import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 
 @Service()
 export class UserService {
+  constructor(private profilePhotoService: ProfilePhotoService) {}
+
   async create(
     @Arg("options", () => CreateUserInput)
     options: CreateUserInput
   ): Promise<User> {
-    return User.create(options).save();
+    const { photoData } = options;
+    const newProfilePhoto: CreateProfilePhotoInput = {
+      data: photoData
+    };
+    const { id } = await this.profilePhotoService.create(newProfilePhoto);
+    return User.create({
+      ...options,
+      profilePictureId: id
+    }).save();
   }
 
   async delete(@Arg("id", () => String) id: string): Promise<User> {

@@ -3,15 +3,14 @@ import {
   Column,
   BaseEntity,
   PrimaryGeneratedColumn,
-  JoinColumn,
-  ManyToOne
+  OneToOne
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
-import { Publication } from "@entity/Publication";
+import { User } from "@entity/User";
 
 @ObjectType()
 @Entity()
-export class Photo extends BaseEntity {
+export class ProfilePhoto extends BaseEntity {
   @Field(() => ID)
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -20,14 +19,10 @@ export class Photo extends BaseEntity {
   @Column("text")
   data: string;
 
-  @Column("uuid")
-  publicationId: string;
-
-  @ManyToOne(
-    () => Publication,
-    (publication: Publication) => publication.photos,
+  @OneToOne(
+    () => User,
+    (user: User) => user.profilePicture,
     { onDelete: "CASCADE" }
   )
-  @JoinColumn({ name: "publicationId" })
-  publication: Publication;
+  user: User;
 }

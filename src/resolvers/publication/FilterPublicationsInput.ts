@@ -1,19 +1,21 @@
 import { InputType, Field } from "type-graphql";
-import {
-  PublicationType,
-  PetType,
-  PetGenderType,
-  Publication
-} from "@src/entity/Publication";
+import { PublicationType } from "@src/entity/Publication";
+import { FilterPetInput } from "@resolvers/pet/FilterPetInput";
 
 @InputType()
-export class FilterPublicationsInput implements Partial<Publication> {
-  @Field(() => String, { nullable: true })
-  type?: PublicationType;
+export class FilterPublicationsInput {
+  @Field(() => [String], { nullable: true })
+  type?: PublicationType[];
 
-  @Field(() => String, { nullable: true })
-  pet?: PetType;
+  @Field(() => FilterPetInput, { nullable: true })
+  petFilters?: FilterPetInput;
 
-  @Field(() => String, { nullable: true })
-  petGender?: PetGenderType;
+  @Field()
+  province: string;
+
+  @Field()
+  location: string;
+
+  @Field(() => Boolean, { nullable: true })
+  reward?: boolean;
 }
