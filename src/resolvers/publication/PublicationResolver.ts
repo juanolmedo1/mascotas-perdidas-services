@@ -15,8 +15,9 @@ import { FilterPublicationsInput } from "@resolvers/publication//FilterPublicati
 import { Service } from "typedi";
 import { PublicationService } from "@src/services/PublicationService";
 import { UserService } from "@src/services/UserService";
-import { Photo } from "@src/entity/Photo";
-import { PhotoService } from "@src/services/PhotoService";
+import { PetService } from "@src/services/PetService";
+import { Pet } from "@src/entity/Pet";
+import { GetPublicationsInput } from "./GetPublicationsInput";
 
 @Service()
 @Resolver(Publication)
@@ -24,7 +25,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   constructor(
     private publicationService: PublicationService,
     private userService: UserService,
-    private photoService: PhotoService
+    private petService: PetService
   ) {}
 
   @Mutation(() => [Publication])
@@ -58,8 +59,11 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => [Publication])
-  async getPublications(): Promise<Publication[]> {
-    return this.publicationService.getAll();
+  async getPublications(
+    @Arg("options", () => GetPublicationsInput)
+    options: GetPublicationsInput
+  ): Promise<Publication[]> {
+    return this.publicationService.getAll(options);
   }
 
   @Query(() => Publication)
@@ -91,7 +95,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @FieldResolver()
-  async photos(@Root() publication: Publication): Promise<Photo[]> {
-    return this.photoService.getAll(publication);
+  async pet(@Root() publication: Publication): Promise<Pet> {
+    return this.petService.getOne(publication.petId);
   }
 }

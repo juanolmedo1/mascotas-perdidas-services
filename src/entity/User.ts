@@ -4,10 +4,13 @@ import {
   BaseEntity,
   PrimaryGeneratedColumn,
   OneToMany,
-  CreateDateColumn
+  CreateDateColumn,
+  OneToOne,
+  JoinColumn
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
+import { ProfilePhoto } from "./ProfilePhoto";
 
 @ObjectType()
 @Entity()
@@ -17,28 +20,55 @@ export class User extends BaseEntity {
   id: string;
 
   @Field()
-  @Column("varchar")
+  @Column()
   firstName: string;
 
   @Field()
-  @Column("varchar")
+  @Column()
   lastName: string;
+
+  @Field()
+  @Column()
+  province: string;
+
+  @Field()
+  @Column()
+  location: string;
+
+  @Field()
+  @Column()
+  phoneNumber: string;
+
+  @Field()
+  @Column()
+  dateOfBirth: string;
+
+  @Field()
+  @Column()
+  email: string;
+
+  @Field()
+  @Column()
+  username: string;
+
+  @Field()
+  @Column()
+  password: string;
 
   @Field()
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
-  // @Field()
-  // @Column("varchar")
-  // dateOfBirth: string;
+  @Column("uuid")
+  profilePictureId: string;
 
-  // @Field()
-  // @Column("varchar")
-  // username: string;
-
-  // @Field()
-  // @Column("varchar")
-  // password: string;
+  @Field(() => ProfilePhoto)
+  @OneToOne(
+    () => ProfilePhoto,
+    (photo: ProfilePhoto) => photo.id
+  )
+  @JoinColumn({ name: "profilePictureId" })
+  profilePicture: ProfilePhoto;
 
   @Field(() => [Publication])
   @OneToMany(

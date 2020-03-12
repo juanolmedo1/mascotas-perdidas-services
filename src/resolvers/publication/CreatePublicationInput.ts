@@ -1,10 +1,6 @@
 import { InputType, Field } from "type-graphql";
-import {
-  PublicationType,
-  PetType,
-  PetGenderType,
-  Publication
-} from "@src/entity/Publication";
+import { PublicationType, Publication } from "@src/entity/Publication";
+import { CreatePetInput } from "@src/resolvers/pet/CreatePetInput";
 
 @InputType()
 export class CreatePublicationInput implements Partial<Publication> {
@@ -14,11 +10,8 @@ export class CreatePublicationInput implements Partial<Publication> {
   @Field(() => String)
   type: PublicationType;
 
-  @Field(() => String)
-  pet: PetType;
-
-  @Field(() => String)
-  petGender: PetGenderType;
+  @Field(() => CreatePetInput)
+  petData: CreatePetInput;
 
   @Field()
   province: string;
@@ -26,6 +19,12 @@ export class CreatePublicationInput implements Partial<Publication> {
   @Field()
   location: string;
 
-  @Field(() => [String])
-  photosData: string[];
+  @Field()
+  phoneNumber: string;
+
+  @Field(() => Boolean, { nullable: true })
+  reward?: boolean;
+
+  @Field(() => String, { nullable: true })
+  additionalInfo?: string;
 }

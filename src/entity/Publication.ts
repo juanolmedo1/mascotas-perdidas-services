@@ -6,28 +6,16 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToMany
+  OneToOne
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
-import { Photo } from "@entity/Photo";
+import { Pet } from "./Pet";
 
 export enum PublicationType {
   LOST = "LOST",
   FOUND = "FOUND",
   ADOPTION = "ADOPTION"
-}
-
-export enum PetType {
-  DOG = "DOG",
-  CAT = "CAT",
-  OTHER = "OTHER"
-}
-
-export enum PetGenderType {
-  MALE = "MALE",
-  FEMALE = "FEMALE",
-  UNDEFINED = "UNDEFINED"
 }
 
 @ObjectType()
@@ -38,8 +26,8 @@ export class Publication extends BaseEntity {
   id: string;
 
   @Field()
-  @CreateDateColumn({ type: "timestamp" })
-  createdAt: Date;
+  @Column({ type: "enum", enum: PublicationType })
+  type: PublicationType;
 
   @Field()
   @Column()
@@ -50,20 +38,35 @@ export class Publication extends BaseEntity {
   location: string;
 
   @Field()
+  @Column()
+  phoneNumber: string;
+
+  @Field()
+  @Column()
+  reward: boolean;
+
+  @Field(() => String)
+  @Column("text")
+  additionalInfo: string;
+
+  @Field()
   @Column({ type: "int", default: 0 })
   complaints: number;
 
   @Field()
-  @Column({ type: "enum", enum: PublicationType })
-  type: PublicationType;
+  @CreateDateColumn({ type: "timestamp" })
+  createdAt: Date;
 
-  @Field()
-  @Column({ type: "enum", enum: PetType })
-  pet: PetType;
+  @Column()
+  petId: string;
 
-  @Field()
-  @Column({ type: "enum", enum: PetGenderType })
-  petGender: PetGenderType;
+  @Field(() => Pet)
+  @OneToOne(
+    () => Pet,
+    (pet: Pet) => pet.id
+  )
+  @JoinColumn({ name: "petId" })
+  pet: Pet;
 
   @Column("uuid")
   creatorId: string;
@@ -76,11 +79,4 @@ export class Publication extends BaseEntity {
   )
   @JoinColumn({ name: "creatorId" })
   creator: User;
-
-  @Field(() => [Photo])
-  @OneToMany(
-    () => Photo,
-    (photo: Photo) => photo.publication
-  )
-  photos: Photo[];
 }

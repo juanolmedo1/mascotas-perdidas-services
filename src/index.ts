@@ -3,11 +3,14 @@ import { createConnection } from "typeorm";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { createSchema } from "@src/createSchema";
+import bodyParser from "body-parser";
 
 const startServer = async () => {
   const app = express();
   await createConnection();
   const schema = await createSchema();
+
+  app.use(bodyParser.json({ limit: "1mb" }));
 
   const apolloServer = new ApolloServer({
     schema,
