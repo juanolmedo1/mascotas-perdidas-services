@@ -29,33 +29,6 @@ export enum PetSize {
   LARGE = "LARGE"
 }
 
-export enum PetColor {
-  WHITE = "WHITE",
-  BLACK = "BLACK",
-  DARK_BROWN = "DARK_BROWN",
-  LIGHT_BROWN = "LIGHT_BROWN",
-  GREY = "GREY",
-  ORANGE = "ORANGE",
-  OTHER = "OTHER"
-}
-
-export enum PetCollarColor {
-  NONE = "NONE",
-  WHITE = "WHITE",
-  BLACK = "BLACK",
-  GREY = "GREY",
-  BLUE = "BLUE",
-  RED = "RED",
-  GREEN = "GREEN",
-  YELLOW = "YELLOW",
-  PINK = "PINK",
-  ORANGE = "ORANGE",
-  DARK_BROWN = "DARK_BROWN",
-  LIGHT_BROWN = "LIGHT_BROWN",
-  VIOLET = "VIOLET",
-  OTHER = "OTHER"
-}
-
 @ObjectType()
 @Entity()
 export class Pet extends BaseEntity {
@@ -73,15 +46,15 @@ export class Pet extends BaseEntity {
 
   @Field()
   @Column({ type: "enum", enum: PetSize })
-  size: PetSize;
+  size?: PetSize;
+
+  @Field(() => [String])
+  @Column("simple-array")
+  color: string[];
 
   @Field()
-  @Column({ type: "enum", enum: PetColor })
-  color: PetColor;
-
-  @Field()
-  @Column({ type: "enum", enum: PetCollarColor })
-  collar: PetCollarColor;
+  @Column()
+  collar: boolean;
 
   @OneToOne(
     () => Publication,

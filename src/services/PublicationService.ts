@@ -6,12 +6,17 @@ import { UpdatePublicationInput } from "@src/resolvers/publication/UpdatePublica
 import { FilterPublicationsInput } from "@src/resolvers/publication/FilterPublicationsInput";
 import { getManager } from "typeorm";
 import { User } from "@src/entity/User";
-import { PetService } from "./PetService";
+import { PetService } from "@src/services/PetService";
 import { GetPublicationsInput } from "@src/resolvers/publication/GetPublicationsInput";
+import { ColorService } from "@src/services/ColorService";
+import { PetGender } from "@src/entity/Pet";
 
 @Service()
 export class PublicationService {
-  constructor(private petService: PetService) {}
+  constructor(
+    private petService: PetService,
+    private colorService: ColorService
+  ) {}
 
   async create(
     @Arg("options", () => CreatePublicationInput)
@@ -153,14 +158,46 @@ export class PublicationService {
         ? PublicationType.LOST
         : PublicationType.FOUND;
 
-    return Publication.createQueryBuilder("publication")
+    const matchingPublications = await Publication.createQueryBuilder(
+      "publication"
+    )
       .leftJoinAndSelect("publication.pet", "pet")
       .where(
         "publication.id <> :id AND publication.province = :province AND publication.location = :location AND publication.type = :publicationType",
         { id, province, location, publicationType }
       )
-      .andWhere("pet.type = :petType", { petType: pet.type })
+      .andWhere(
+        "pet.type = :petType AND pet.gender IN (:...petGender) AND pet.collar = :petCollar",
+        {
+          petType: pet.type,
+          petGender: [pet.gender, PetGender.UNDEFINED],
+          petCollar: pet.collar
+        }
+      )
       .getMany();
+
+    let selectedPublications: Publication[] = [];
+
+    matchingPublications.forEach((publication: Publication) => {
+      let minimumDeltas = [];
+      for (let i = 0; i < pet.color.length; i++) {
+        let deltas: number[] = [];
+        for (let j = 0; j < publication.pet.color.length; j++) {
+          const deltaValue = this.colorService.getDeltaE(
+            pet.color[i],
+            publication.pet.color[j]
+          );
+          deltas.push(deltaValue);
+        }
+        const minimum = Math.min(...deltas);
+        minimumDeltas.push(minimum);
+      }
+      if (this.colorService.isSimilar(minimumDeltas, pet.color.length)) {
+        selectedPublications.push(publication);
+      }
+    });
+
+    return selectedPublications;
   }
 
   async getUserPublications({ id }: User): Promise<Publication[]> {
