@@ -17,9 +17,10 @@ export class PetService {
     const pet = await Pet.create(options).save();
     const { id } = pet;
     const { photosData } = options;
-    for (const data of photosData) {
+    for (const photo of photosData) {
       const newPhoto: CreatePetPhotoInput = {
-        data,
+        data: photo.data,
+        type: photo.type,
         petId: id
       };
 

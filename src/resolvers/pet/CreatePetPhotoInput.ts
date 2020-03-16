@@ -8,4 +8,7 @@ export class CreatePetPhotoInput implements Partial<PetPhoto> {
 
   @Field()
   data: string;
+
+  @Field()
+  type: string;
 }

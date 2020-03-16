@@ -15,6 +15,10 @@ export class ProfilePhoto extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
+  @Field()
+  @Column()
+  type: string;
+
   @Field(() => String)
   @Column("text")
   data: string;

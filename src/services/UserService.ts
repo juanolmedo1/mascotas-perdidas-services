@@ -15,9 +15,12 @@ export class UserService {
     @Arg("options", () => CreateUserInput)
     options: CreateUserInput
   ): Promise<User> {
-    const { photoData } = options;
+    const {
+      photo: { data, type }
+    } = options;
     const newProfilePhoto: CreateProfilePhotoInput = {
-      data: photoData
+      data,
+      type
     };
     const { id } = await this.profilePhotoService.create(newProfilePhoto);
     return User.create({

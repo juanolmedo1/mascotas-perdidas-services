@@ -1,5 +1,6 @@
 import { InputType, Field } from "type-graphql";
 import { User } from "@src/entity/User";
+import { CreateProfilePhotoInput } from "./CreateProfilePhotoInput";
 
 @InputType()
 export class CreateUserInput implements Partial<User> {
@@ -31,5 +32,5 @@ export class CreateUserInput implements Partial<User> {
   password: string;
 
   @Field()
-  photoData: string;
+  photo: CreateProfilePhotoInput;
 }

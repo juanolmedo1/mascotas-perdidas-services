@@ -5,4 +5,7 @@ import { ProfilePhoto } from "@src/entity/ProfilePhoto";
 export class CreateProfilePhotoInput implements Partial<ProfilePhoto> {
   @Field()
   data: string;
+
+  @Field()
+  type: string;
 }
