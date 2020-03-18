@@ -9,7 +9,7 @@ import { User } from "@src/entity/User";
 import { PetService } from "@src/services/PetService";
 import { GetPublicationsInput } from "@src/resolvers/publication/GetPublicationsInput";
 import { ColorService } from "@src/services/ColorService";
-import { PetGender } from "@src/entity/Pet";
+import { PetGender, PetSize } from "@src/entity/Pet";
 
 @Service()
 export class PublicationService {
@@ -64,7 +64,10 @@ export class PublicationService {
     options: GetPublicationsInput
   ): Promise<Publication[]> {
     const { province, location } = options;
-    return Publication.find({ where: { province, location } });
+    return Publication.find({
+      where: { province, location },
+      order: { createdAt: "DESC" }
+    });
   }
 
   async update(
@@ -88,10 +91,9 @@ export class PublicationService {
     @Arg("options", () => FilterPublicationsInput)
     options: FilterPublicationsInput
   ): Promise<Publication[]> {
-    const { petFilters, province, location, reward, type } = options;
+    const { petFilters, province, location, type } = options;
 
     const publicationType = type ? `AND publication.type IN (:...pubType)` : ``;
-    const rewardFilter = reward ? `AND publication.reward = :reward` : ``;
     const petTypeFilter = petFilters
       ? petFilters.type
         ? "AND pet.type IN (:...petType)"
@@ -112,26 +114,19 @@ export class PublicationService {
         ? "AND pet.color IN (:...petColor)"
         : ""
       : "";
-    const petCollarFilter = petFilters
-      ? petFilters.collar
-        ? "AND pet.collar IN (:...petCollar)"
-        : ""
-      : "";
 
     return Publication.createQueryBuilder("publication")
       .leftJoinAndSelect("publication.pet", "pet")
       .where(
-        `publication.province = :province AND publication.location = :location ${publicationType} ${rewardFilter} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter} ${petColorFilter} ${petCollarFilter}`,
+        `publication.province = :province AND publication.location = :location ${publicationType} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter} ${petColorFilter}`,
         {
           province,
           location,
           pubType: options.type,
-          reward,
           petType: petFilters && petFilters.type,
           petGender: petFilters && petFilters.gender,
           petSize: petFilters && petFilters.size,
-          petColor: petFilters && petFilters.color,
-          petCollar: petFilters && petFilters.collar
+          petColor: petFilters && petFilters.color
         }
       )
       .getMany();
@@ -141,6 +136,22 @@ export class PublicationService {
     @Arg("id", () => String) id: string
   ): Promise<Publication | undefined> {
     return Publication.findOne(id);
+  }
+
+  searchSizes(
+    @Arg("size", () => String)
+    size: string
+  ): String[] {
+    switch (size) {
+      case PetSize.VERY_SMALL:
+        return [PetSize.VERY_SMALL, PetSize.SMALL];
+      case PetSize.SMALL:
+        return [PetSize.VERY_SMALL, PetSize.SMALL, PetSize.MEDIUM];
+      case PetSize.MEDIUM:
+        return [PetSize.SMALL, PetSize.MEDIUM, PetSize.LARGE];
+      default:
+        return [PetSize.MEDIUM, PetSize.LARGE];
+    }
   }
 
   async getMatchings(
@@ -155,25 +166,28 @@ export class PublicationService {
 
     const publicationType =
       publication.type === PublicationType.FOUND
-        ? PublicationType.LOST
-        : PublicationType.FOUND;
+        ? [PublicationType.LOST]
+        : [PublicationType.FOUND, PublicationType.ADOPTION];
+
+    const petSizes = this.searchSizes(pet.size);
 
     const matchingPublications = await Publication.createQueryBuilder(
       "publication"
     )
       .leftJoinAndSelect("publication.pet", "pet")
       .where(
-        "publication.id <> :id AND publication.province = :province AND publication.location = :location AND publication.type = :publicationType",
+        "publication.id <> :id AND publication.province = :province AND publication.location = :location AND publication.type IN (:...publicationType)",
         { id, province, location, publicationType }
       )
       .andWhere(
-        "pet.type = :petType AND pet.gender IN (:...petGender) AND pet.collar = :petCollar",
+        "pet.type = :petType AND pet.gender IN (:...petGender) AND pet.size IN (:...petSizes)",
         {
           petType: pet.type,
           petGender: [pet.gender, PetGender.UNDEFINED],
-          petCollar: pet.collar
+          petSizes
         }
       )
+      .orderBy("publication.createdAt", "DESC")
       .getMany();
 
     let selectedPublications: Publication[] = [];

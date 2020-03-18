@@ -46,7 +46,7 @@ export class Pet extends BaseEntity {
 
   @Field()
   @Column({ type: "enum", enum: PetSize })
-  size?: PetSize;
+  size: PetSize;
 
   @Field(() => [String])
   @Column("simple-array")
