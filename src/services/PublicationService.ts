@@ -9,7 +9,7 @@ import { User } from "@src/entity/User";
 import { PetService } from "@src/services/PetService";
 import { GetPublicationsInput } from "@src/resolvers/publication/GetPublicationsInput";
 import { ColorService } from "@src/services/ColorService";
-import { PetGender, PetSize } from "@src/entity/Pet";
+import { PetGender, PetSize, PetType } from "@src/entity/Pet";
 
 @Service()
 export class PublicationService {
@@ -92,43 +92,40 @@ export class PublicationService {
     options: FilterPublicationsInput
   ): Promise<Publication[]> {
     const { petFilters, province, location, type } = options;
+    const { gender, size } = petFilters;
 
-    const publicationType = type ? `AND publication.type IN (:...pubType)` : ``;
-    const petTypeFilter = petFilters
-      ? petFilters.type
-        ? "AND pet.type IN (:...petType)"
-        : ""
+    const publicationType = type.length
+      ? `AND publication.type IN (:...pubType)`
+      : ``;
+    const petTypeFilter = petFilters.type.length
+      ? "AND pet.type IN (:...petType)"
       : "";
-    const petGenderFilter = petFilters
-      ? petFilters.gender
-        ? "AND pet.gender IN (:...petGender)"
-        : ""
+    const petGenderFilter = gender.length
+      ? "AND pet.gender IN (:...petGender)"
       : "";
-    const petSizeFilter = petFilters
-      ? petFilters.size
+    const petSizeFilter =
+      size.length && !petFilters.type.includes(PetType.CAT)
         ? "AND pet.size IN (:...petSize)"
-        : ""
-      : "";
-    const petColorFilter = petFilters
-      ? petFilters.color
-        ? "AND pet.color IN (:...petColor)"
-        : ""
-      : "";
+        : "";
+    // const petColorFilter = .color.length
+    //     ? "AND pet.color IN (:...petColor)"
+    //     : "";
 
     return Publication.createQueryBuilder("publication")
       .leftJoinAndSelect("publication.pet", "pet")
       .where(
-        `publication.province = :province AND publication.location = :location ${publicationType} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter} ${petColorFilter}`,
+        `publication.province = :province AND publication.location = :location ${publicationType} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter}`,
         {
           province,
           location,
-          pubType: options.type,
-          petType: petFilters && petFilters.type,
-          petGender: petFilters && petFilters.gender,
-          petSize: petFilters && petFilters.size,
-          petColor: petFilters && petFilters.color
+          pubType: type,
+          petType: petFilters.type,
+          petGender: gender,
+          petSize: size
+          // petColor: petFilters && petFilters.color
         }
       )
+      .orderBy("publication.createdAt", "DESC")
       .getMany();
   }
 

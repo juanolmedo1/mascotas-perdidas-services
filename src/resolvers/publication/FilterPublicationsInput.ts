@@ -4,18 +4,15 @@ import { FilterPetInput } from "@resolvers/pet/FilterPetInput";
 
 @InputType()
 export class FilterPublicationsInput {
-  @Field(() => [String], { nullable: true })
-  type?: PublicationType[];
+  @Field(() => [String])
+  type: PublicationType[];
 
-  @Field(() => FilterPetInput, { nullable: true })
-  petFilters?: FilterPetInput;
+  @Field(() => FilterPetInput)
+  petFilters: FilterPetInput;
 
   @Field()
   province: string;
 
   @Field()
   location: string;
-
-  @Field(() => Boolean, { nullable: true })
-  reward?: boolean;
 }
