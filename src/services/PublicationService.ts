@@ -107,9 +107,6 @@ export class PublicationService {
       size.length && !petFilters.type.includes(PetType.CAT)
         ? "AND pet.size IN (:...petSize)"
         : "";
-    // const petColorFilter = .color.length
-    //     ? "AND pet.color IN (:...petColor)"
-    //     : "";
 
     return Publication.createQueryBuilder("publication")
       .leftJoinAndSelect("publication.pet", "pet")
@@ -122,7 +119,6 @@ export class PublicationService {
           petType: petFilters.type,
           petGender: gender,
           petSize: size
-          // petColor: petFilters && petFilters.color
         }
       )
       .orderBy("publication.createdAt", "DESC")
@@ -203,7 +199,7 @@ export class PublicationService {
         const minimum = Math.min(...deltas);
         minimumDeltas.push(minimum);
       }
-      if (this.colorService.isSimilar(minimumDeltas, pet.color.length)) {
+      if (minimumDeltas.every(this.colorService.similar)) {
         selectedPublications.push(publication);
       }
     });

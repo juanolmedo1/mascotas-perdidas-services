@@ -2,21 +2,8 @@ import { Service } from "typedi";
 
 @Service()
 export class ColorService {
-  isSimilar(deltas: number[], combinations: number): boolean {
-    switch (combinations) {
-      case 1:
-        return deltas.some(this.similar);
-      default: {
-        if (deltas.every(this.similar)) {
-          return true;
-        }
-        return false;
-      }
-    }
-  }
-
   similar(value: number): boolean {
-    return value < 45;
+    return value < 30;
   }
 
   hexToRgb(hex: string): number[] {
