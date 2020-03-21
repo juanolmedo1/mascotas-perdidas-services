@@ -3,7 +3,7 @@ import { Service } from "typedi";
 @Service()
 export class ColorService {
   similar(value: number): boolean {
-    return value < 30;
+    return value < 15;
   }
 
   hexToRgb(hex: string): number[] {

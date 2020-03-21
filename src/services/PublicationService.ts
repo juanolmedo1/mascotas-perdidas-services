@@ -199,7 +199,7 @@ export class PublicationService {
         const minimum = Math.min(...deltas);
         minimumDeltas.push(minimum);
       }
-      if (minimumDeltas.every(this.colorService.similar)) {
+      if (minimumDeltas.some(this.colorService.similar)) {
         selectedPublications.push(publication);
       }
     });
