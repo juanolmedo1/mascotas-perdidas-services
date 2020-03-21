@@ -16,6 +16,7 @@ import { UserService } from "@src/services/UserService";
 import { PublicationService } from "@src/services/PublicationService";
 import { ProfilePhoto } from "@src/entity/ProfilePhoto";
 import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
+import { LoginInput } from "@resolvers/user/LoginInput";
 
 @Service()
 @Resolver(User)
@@ -25,6 +26,14 @@ export class UserResolver implements ResolverInterface<User> {
     private publicationService: PublicationService,
     private profilePhotoService: ProfilePhotoService
   ) {}
+
+  @Mutation(() => User)
+  async login(
+    @Arg("options", () => LoginInput)
+    options: LoginInput
+  ): Promise<User> {
+    return this.userService.login(options);
+  }
 
   @Mutation(() => User)
   async createUser(

@@ -6,32 +6,70 @@ import { UpdateUserInput } from "@src/resolvers/user/UpdateUserInput";
 import { Publication } from "@src/entity/Publication";
 import { CreateProfilePhotoInput } from "@src/resolvers/user/CreateProfilePhotoInput";
 import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
+import { LoginInput } from "@src/resolvers/user/LoginInput";
+import { ErrorMessages } from "@src/types/ErrorMessages";
+import bcrypt from "bcryptjs";
+import { UserInputError } from "apollo-server-core";
 
 @Service()
 export class UserService {
   constructor(private profilePhotoService: ProfilePhotoService) {}
+
+  async login(
+    @Arg("options", () => LoginInput)
+    options: LoginInput
+  ): Promise<User> {
+    const { username, password } = options;
+    const user = await this.checkLogin(username);
+    if (!user) {
+      throw new UserInputError(ErrorMessages.INVALID_USERNAME);
+    }
+
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      throw new UserInputError(ErrorMessages.INVALID_PASSWORD);
+    }
+
+    return user;
+  }
 
   async create(
     @Arg("options", () => CreateUserInput)
     options: CreateUserInput
   ): Promise<User> {
     const {
-      photo: { data, type }
+      photo: { data, type },
+      password,
+      email,
+      username
     } = options;
+    const emailExist = await this.getByEmail(email);
+    if (emailExist) {
+      throw new UserInputError(ErrorMessages.EMAIL_EXIST);
+    }
+    const usernameExist = await this.getByUsername(username);
+    if (usernameExist) {
+      throw new UserInputError(ErrorMessages.USERNAME_EXIST);
+    }
     const newProfilePhoto: CreateProfilePhotoInput = {
       data,
       type
     };
+    const hashedPassword = await bcrypt.hash(password, 10);
     const { id } = await this.profilePhotoService.create(newProfilePhoto);
     return User.create({
       ...options,
-      profilePictureId: id
+      profilePictureId: id,
+      password: hashedPassword
     }).save();
   }
 
   async delete(@Arg("id", () => String) id: string): Promise<User> {
     const deletedUser = await User.findOne(id);
-    if (!deletedUser) throw new Error("User was not found.");
+    if (!deletedUser) {
+      throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
+    }
     await User.delete(id);
     return deletedUser;
   }
@@ -42,7 +80,9 @@ export class UserService {
   ): Promise<User> {
     await User.update(id, input);
     const updatedUser = await User.findOne(id);
-    if (!updatedUser) throw new Error("User not found");
+    if (!updatedUser) {
+      throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
+    }
     return updatedUser;
   }
 
@@ -54,9 +94,27 @@ export class UserService {
     return User.findOne(id);
   }
 
+  async checkLogin(
+    @Arg("username", () => String) username: string
+  ): Promise<User | undefined> {
+    return User.findOne({ where: [{ username }, { email: username }] });
+  }
+
+  async getByUsername(
+    @Arg("username", () => String) username: string
+  ): Promise<User | undefined> {
+    return User.findOne({ where: { username } });
+  }
+
+  async getByEmail(
+    @Arg("email", () => String) email: string
+  ): Promise<User | undefined> {
+    return User.findOne({ where: { email } });
+  }
+
   async getCreator({ creatorId }: Publication): Promise<User> {
     const creator = await User.findOne(creatorId);
-    if (!creator) throw new Error("Creator not found.");
+    if (!creator) throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     return creator;
   }
 }
