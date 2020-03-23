@@ -89,6 +89,14 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     return this.publicationService.getMatchings(publicationId);
   }
 
+  @Query(() => [Publication])
+  async getUserPublications(
+    @Arg("userId", () => String)
+    userId: string
+  ): Promise<Publication[]> {
+    return this.publicationService.getUserPublications(userId);
+  }
+
   @FieldResolver()
   async creator(@Root() publication: Publication): Promise<User> {
     return this.userService.getCreator(publication);

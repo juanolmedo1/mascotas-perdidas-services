@@ -5,7 +5,6 @@ import { CreatePublicationInput } from "@src/resolvers/publication/CreatePublica
 import { UpdatePublicationInput } from "@src/resolvers/publication/UpdatePublicationInput";
 import { FilterPublicationsInput } from "@src/resolvers/publication/FilterPublicationsInput";
 import { getManager } from "typeorm";
-import { User } from "@src/entity/User";
 import { PetService } from "@src/services/PetService";
 import { GetPublicationsInput } from "@src/resolvers/publication/GetPublicationsInput";
 import { ColorService } from "@src/services/ColorService";
@@ -207,8 +206,11 @@ export class PublicationService {
     return selectedPublications;
   }
 
-  async getUserPublications({ id }: User): Promise<Publication[]> {
-    return Publication.find({ where: { creatorId: id } });
+  async getUserPublications(id: String): Promise<Publication[]> {
+    return Publication.find({
+      where: { creatorId: id },
+      order: { createdAt: "DESC" }
+    });
   }
 
   async addComplaint(

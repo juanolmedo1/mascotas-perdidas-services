@@ -70,7 +70,7 @@ export class UserResolver implements ResolverInterface<User> {
 
   @FieldResolver()
   async publications(@Root() user: User): Promise<Publication[]> {
-    return this.publicationService.getUserPublications(user);
+    return this.publicationService.getUserPublications(user.id);
   }
 
   @FieldResolver()
