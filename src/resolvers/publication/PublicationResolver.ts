@@ -5,7 +5,8 @@ import {
   Query,
   FieldResolver,
   Root,
-  ResolverInterface
+  ResolverInterface,
+  UseMiddleware,
 } from "type-graphql";
 import { Publication } from "@entity/Publication";
 import { User } from "@entity/User";
@@ -18,6 +19,7 @@ import { UserService } from "@src/services/UserService";
 import { PetService } from "@src/services/PetService";
 import { Pet } from "@src/entity/Pet";
 import { GetPublicationsInput } from "./GetPublicationsInput";
+import AuthService from "@src/auth/AuthService";
 
 @Service()
 @Resolver(Publication)
@@ -29,6 +31,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   ) {}
 
   @Mutation(() => [Publication])
+  @UseMiddleware(AuthService.isAuth)
   async createPublication(
     @Arg("options", () => CreatePublicationInput)
     options: CreatePublicationInput
@@ -59,6 +62,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => [Publication])
+  @UseMiddleware(AuthService.isAuth)
   async getPublications(
     @Arg("options", () => GetPublicationsInput)
     options: GetPublicationsInput

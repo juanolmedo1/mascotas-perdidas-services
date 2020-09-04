@@ -10,6 +10,8 @@ import { LoginInput } from "@src/resolvers/user/LoginInput";
 import { ErrorMessages } from "@src/types/ErrorMessages";
 import bcrypt from "bcryptjs";
 import { UserInputError } from "apollo-server-core";
+import { LoginResponse } from "@src/auth/LoginResponse";
+import AuthService from "@src/auth/AuthService";
 
 @Service()
 export class UserService {
@@ -18,7 +20,7 @@ export class UserService {
   async login(
     @Arg("options", () => LoginInput)
     options: LoginInput
-  ): Promise<User> {
+  ): Promise<LoginResponse> {
     const { username, password } = options;
     const user = await this.checkLogin(username);
     if (!user) {
@@ -31,7 +33,10 @@ export class UserService {
       throw new UserInputError(ErrorMessages.INVALID_PASSWORD);
     }
 
-    return user;
+    return {
+      accessToken: AuthService.createAccessToken(user),
+      refreshToken: AuthService.createRefreshToken(user),
+    };
   }
 
   async create(
@@ -42,7 +47,7 @@ export class UserService {
       photo: { data, type },
       password,
       email,
-      username
+      username,
     } = options;
     const emailExist = await this.getByEmail(email);
     if (emailExist) {
@@ -54,14 +59,14 @@ export class UserService {
     }
     const newProfilePhoto: CreateProfilePhotoInput = {
       data,
-      type
+      type,
     };
     const hashedPassword = await bcrypt.hash(password, 10);
     const { id } = await this.profilePhotoService.create(newProfilePhoto);
     return User.create({
       ...options,
       profilePictureId: id,
-      password: hashedPassword
+      password: hashedPassword,
     }).save();
   }
 

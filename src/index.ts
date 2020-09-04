@@ -1,3 +1,4 @@
+import "dotenv/config";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
 import express from "express";
@@ -14,7 +15,7 @@ const startServer = async () => {
 
   const apolloServer = new ApolloServer({
     schema,
-    context: ({ req, res }) => ({ req, res })
+    context: ({ req, res }) => ({ req, res }),
   });
 
   apolloServer.applyMiddleware({ app, cors: false });
@@ -24,6 +25,6 @@ const startServer = async () => {
   });
 };
 
-startServer().catch(error => {
+startServer().catch((error) => {
   console.log(error);
 });

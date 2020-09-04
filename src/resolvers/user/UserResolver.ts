@@ -5,7 +5,7 @@ import {
   Query,
   FieldResolver,
   ResolverInterface,
-  Root
+  Root,
 } from "type-graphql";
 import { User } from "@entity/User";
 import { Publication } from "@entity/Publication";
@@ -17,6 +17,7 @@ import { PublicationService } from "@src/services/PublicationService";
 import { ProfilePhoto } from "@src/entity/ProfilePhoto";
 import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 import { LoginInput } from "@resolvers/user/LoginInput";
+import { LoginResponse } from "@src/auth/LoginResponse";
 
 @Service()
 @Resolver(User)
@@ -27,11 +28,11 @@ export class UserResolver implements ResolverInterface<User> {
     private profilePhotoService: ProfilePhotoService
   ) {}
 
-  @Mutation(() => User)
+  @Mutation(() => LoginResponse)
   async login(
     @Arg("options", () => LoginInput)
     options: LoginInput
-  ): Promise<User> {
+  ): Promise<LoginResponse> {
     return this.userService.login(options);
   }
 
