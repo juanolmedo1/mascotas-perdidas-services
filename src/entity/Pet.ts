@@ -4,7 +4,7 @@ import {
   BaseEntity,
   PrimaryGeneratedColumn,
   OneToMany,
-  OneToOne
+  OneToOne,
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { PetPhoto } from "@src/entity/PetPhoto";
@@ -13,20 +13,20 @@ import { Publication } from "./Publication";
 export enum PetType {
   DOG = "DOG",
   CAT = "CAT",
-  OTHER = "OTHER"
+  OTHER = "OTHER",
 }
 
 export enum PetGender {
   MALE = "MALE",
   FEMALE = "FEMALE",
-  UNDEFINED = "UNDEFINED"
+  UNDEFINED = "UNDEFINED",
 }
 
 export enum PetSize {
   VERY_SMALL = "VERY_SMALL",
   SMALL = "SMALL",
   MEDIUM = "MEDIUM",
-  LARGE = "LARGE"
+  LARGE = "LARGE",
 }
 
 @ObjectType()
@@ -56,17 +56,10 @@ export class Pet extends BaseEntity {
   @Column()
   collar: boolean;
 
-  @OneToOne(
-    () => Publication,
-    (publication: Publication) => publication.pet,
-    { onDelete: "CASCADE" }
-  )
+  @OneToOne(() => Publication, (publication: Publication) => publication.pet)
   publication: Publication;
 
   @Field(() => [PetPhoto])
-  @OneToMany(
-    () => PetPhoto,
-    (photo: PetPhoto) => photo.pet
-  )
+  @OneToMany(() => PetPhoto, (photo: PetPhoto) => photo.pet)
   photos: PetPhoto[];
 }

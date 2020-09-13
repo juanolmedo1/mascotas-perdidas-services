@@ -6,7 +6,7 @@ import {
   OneToMany,
   CreateDateColumn,
   OneToOne,
-  JoinColumn
+  JoinColumn,
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
@@ -63,10 +63,7 @@ export class User extends BaseEntity {
   profilePictureId: string;
 
   @Field(() => ProfilePhoto)
-  @OneToOne(
-    () => ProfilePhoto,
-    (photo: ProfilePhoto) => photo.id
-  )
+  @OneToOne(() => ProfilePhoto, (photo: ProfilePhoto) => photo.id)
   @JoinColumn({ name: "profilePictureId" })
   profilePicture: ProfilePhoto;
 
