@@ -8,4 +8,7 @@ export class CreateProfilePhotoInput implements Partial<ProfilePhoto> {
 
   @Field()
   type: string;
+
+  @Field(() => String, { nullable: true })
+  publicId?: string;
 }
