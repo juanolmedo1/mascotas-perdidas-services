@@ -4,7 +4,7 @@ import {
   BaseEntity,
   PrimaryGeneratedColumn,
   JoinColumn,
-  ManyToOne
+  ManyToOne,
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { Pet } from "@entity/Pet";
@@ -27,11 +27,11 @@ export class PetPhoto extends BaseEntity {
   @Column("uuid")
   petId: string;
 
-  @ManyToOne(
-    () => Pet,
-    (pet: Pet) => pet.photos,
-    { onDelete: "CASCADE" }
-  )
+  @Field(() => String)
+  @Column("text")
+  publicId: string;
+
+  @ManyToOne(() => Pet, (pet: Pet) => pet.photos)
   @JoinColumn({ name: "petId" })
   pet: Pet;
 }

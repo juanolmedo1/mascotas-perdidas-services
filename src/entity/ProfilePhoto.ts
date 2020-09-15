@@ -3,7 +3,7 @@ import {
   Column,
   BaseEntity,
   PrimaryGeneratedColumn,
-  OneToOne
+  OneToOne,
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
@@ -23,10 +23,10 @@ export class ProfilePhoto extends BaseEntity {
   @Column("text")
   data: string;
 
-  @OneToOne(
-    () => User,
-    (user: User) => user.profilePicture,
-    { onDelete: "CASCADE" }
-  )
+  @Field(() => String)
+  @Column("text")
+  publicId: string;
+
+  @OneToOne(() => User, (user: User) => user.profilePicture)
   user: User;
 }

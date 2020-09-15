@@ -9,6 +9,7 @@ import { PetService } from "@src/services/PetService";
 import { GetPublicationsInput } from "@src/resolvers/publication/GetPublicationsInput";
 import { ColorService } from "@src/services/ColorService";
 import { PetGender, PetSize, PetType } from "@src/entity/Pet";
+import { User } from "@src/entity/User";
 
 @Service()
 export class PublicationService {
@@ -29,7 +30,7 @@ export class PublicationService {
       location,
       phoneNumber,
       province,
-      reward
+      reward,
     } = options;
     const pet = await this.petService.create(petData);
     const publication = await Publication.create({
@@ -40,13 +41,12 @@ export class PublicationService {
       location,
       phoneNumber,
       province,
-      reward
+      reward,
     }).save();
 
     if (type === PublicationType.ADOPTION) {
       return [];
     }
-
     const { id } = publication;
     return this.getMatchings(id);
   }
@@ -55,7 +55,17 @@ export class PublicationService {
     const deletedPublication = await Publication.findOne(id);
     if (!deletedPublication) throw new Error("Publication not found.");
     await Publication.delete(id);
+    await this.petService.delete(deletedPublication.petId);
     return deletedPublication;
+  }
+
+  async deleteAllFromUser({ id }: User): Promise<void> {
+    const publications = await Publication.find({
+      where: { creatorId: id },
+    });
+    for (const publication of publications) {
+      await this.delete(publication.id);
+    }
   }
 
   async getAll(
@@ -65,7 +75,7 @@ export class PublicationService {
     const { province, location } = options;
     return Publication.find({
       where: { province, location },
-      order: { createdAt: "DESC" }
+      order: { createdAt: "DESC" },
     });
   }
 
@@ -117,7 +127,7 @@ export class PublicationService {
           pubType: type,
           petType: petFilters.type,
           petGender: gender,
-          petSize: size
+          petSize: size,
         }
       )
       .orderBy("publication.createdAt", "DESC")
@@ -176,7 +186,7 @@ export class PublicationService {
         {
           petType: pet.type,
           petGender: [pet.gender, PetGender.UNDEFINED],
-          petSizes
+          petSizes,
         }
       )
       .orderBy("publication.createdAt", "DESC")
@@ -209,7 +219,7 @@ export class PublicationService {
   async getUserPublications(id: String): Promise<Publication[]> {
     return Publication.find({
       where: { creatorId: id },
-      order: { createdAt: "DESC" }
+      order: { createdAt: "DESC" },
     });
   }
 

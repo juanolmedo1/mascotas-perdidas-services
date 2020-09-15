@@ -10,10 +10,14 @@ import { LoginInput } from "@src/resolvers/user/LoginInput";
 import { ErrorMessages } from "@src/types/ErrorMessages";
 import bcrypt from "bcryptjs";
 import { UserInputError } from "apollo-server-core";
+import { PublicationService } from "@src/services/PublicationService";
 
 @Service()
 export class UserService {
-  constructor(private profilePhotoService: ProfilePhotoService) {}
+  constructor(
+    private profilePhotoService: ProfilePhotoService,
+    private publicationService: PublicationService
+  ) {}
 
   async login(
     @Arg("options", () => LoginInput)
@@ -42,7 +46,7 @@ export class UserService {
       photo: { data, type },
       password,
       email,
-      username
+      username,
     } = options;
     const emailExist = await this.getByEmail(email);
     if (emailExist) {
@@ -54,14 +58,14 @@ export class UserService {
     }
     const newProfilePhoto: CreateProfilePhotoInput = {
       data,
-      type
+      type,
     };
     const hashedPassword = await bcrypt.hash(password, 10);
     const { id } = await this.profilePhotoService.create(newProfilePhoto);
     return User.create({
       ...options,
       profilePictureId: id,
-      password: hashedPassword
+      password: hashedPassword,
     }).save();
   }
 
@@ -70,7 +74,9 @@ export class UserService {
     if (!deletedUser) {
       throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     }
+    await this.publicationService.deleteAllFromUser(deletedUser);
     await User.delete(id);
+    await this.profilePhotoService.delete(deletedUser.profilePictureId);
     return deletedUser;
   }
 
