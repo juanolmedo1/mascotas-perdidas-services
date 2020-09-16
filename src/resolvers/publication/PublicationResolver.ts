@@ -82,7 +82,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     return this.publicationService.getFiltered(options);
   }
 
-  @Query(() => [Publication])
+  @Query(() => GetMatchingsResponse)
   async getMatchingPublications(
     @Arg("publicationId", () => String)
     publicationId: string

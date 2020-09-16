@@ -232,6 +232,8 @@ export class PublicationService {
       selectedPublications.length
     );
 
+    await this.update(publicationId, { lastMatchingSearch: new Date() });
+
     return { publicationsNotViewed, publicationsViewed };
   }
 
