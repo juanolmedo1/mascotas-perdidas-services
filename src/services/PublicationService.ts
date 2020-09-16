@@ -10,6 +10,7 @@ import { GetPublicationsInput } from "@src/resolvers/publication/GetPublications
 import { ColorService } from "@src/services/ColorService";
 import { PetGender, PetSize, PetType } from "@src/entity/Pet";
 import { User } from "@src/entity/User";
+import { GetMatchingsResponse } from "@src/resolvers/publication/GetMatchingsResponse";
 
 @Service()
 export class PublicationService {
@@ -48,7 +49,12 @@ export class PublicationService {
       return [];
     }
     const { id } = publication;
-    return this.getMatchings(id);
+    const {
+      publicationsNotViewed,
+      publicationsViewed,
+    } = await this.getMatchings(id);
+
+    return [...publicationsNotViewed, ...publicationsViewed];
   }
 
   async delete(@Arg("id", () => String) id: string): Promise<Publication> {
@@ -159,10 +165,10 @@ export class PublicationService {
   async getMatchings(
     @Arg("publicationId", () => String)
     publicationId: string
-  ): Promise<Publication[]> {
+  ): Promise<GetMatchingsResponse> {
     const publication = await Publication.findOne(publicationId);
     if (!publication) throw new Error("Publication was not found.");
-    const { id, province, location, petId } = publication;
+    const { id, province, location, petId, lastMatchingSearch } = publication;
     const pet = await this.petService.getOne(petId);
     if (!pet) throw new Error("Pet was not found.");
 
@@ -213,7 +219,20 @@ export class PublicationService {
       }
     });
 
-    return selectedPublications;
+    const lastViewed = (publication: Publication) => {
+      return publication.createdAt.getTime() <= lastMatchingSearch.getTime();
+    };
+    const lastViewedIndex = selectedPublications.findIndex(lastViewed);
+    const publicationsNotViewed = selectedPublications.slice(
+      0,
+      lastViewedIndex
+    );
+    const publicationsViewed = selectedPublications.slice(
+      lastViewedIndex,
+      selectedPublications.length
+    );
+
+    return { publicationsNotViewed, publicationsViewed };
   }
 
   async getUserPublications(id: String): Promise<Publication[]> {

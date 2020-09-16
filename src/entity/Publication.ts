@@ -57,6 +57,10 @@ export class Publication extends BaseEntity {
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
+  @Field()
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  lastMatchingSearch: Date;
+
   @Column()
   petId: string;
 

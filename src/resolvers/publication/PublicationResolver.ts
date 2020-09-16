@@ -5,7 +5,7 @@ import {
   Query,
   FieldResolver,
   Root,
-  ResolverInterface
+  ResolverInterface,
 } from "type-graphql";
 import { Publication } from "@entity/Publication";
 import { User } from "@entity/User";
@@ -17,7 +17,8 @@ import { PublicationService } from "@src/services/PublicationService";
 import { UserService } from "@src/services/UserService";
 import { PetService } from "@src/services/PetService";
 import { Pet } from "@src/entity/Pet";
-import { GetPublicationsInput } from "./GetPublicationsInput";
+import { GetPublicationsInput } from "@resolvers/publication/GetPublicationsInput";
+import { GetMatchingsResponse } from "@resolvers/publication/GetMatchingsResponse";
 
 @Service()
 @Resolver(Publication)
@@ -85,7 +86,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   async getMatchingPublications(
     @Arg("publicationId", () => String)
     publicationId: string
-  ): Promise<Publication[]> {
+  ): Promise<GetMatchingsResponse> {
     return this.publicationService.getMatchings(publicationId);
   }
 
