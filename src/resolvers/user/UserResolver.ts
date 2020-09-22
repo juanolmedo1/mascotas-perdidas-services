@@ -5,7 +5,7 @@ import {
   Query,
   FieldResolver,
   ResolverInterface,
-  Root
+  Root,
 } from "type-graphql";
 import { User } from "@entity/User";
 import { Publication } from "@entity/Publication";
@@ -28,14 +28,6 @@ export class UserResolver implements ResolverInterface<User> {
   ) {}
 
   @Mutation(() => User)
-  async login(
-    @Arg("options", () => LoginInput)
-    options: LoginInput
-  ): Promise<User> {
-    return this.userService.login(options);
-  }
-
-  @Mutation(() => User)
   async createUser(
     @Arg("options", () => CreateUserInput)
     options: CreateUserInput
@@ -54,6 +46,14 @@ export class UserResolver implements ResolverInterface<User> {
   @Mutation(() => User)
   async deleteUser(@Arg("id", () => String) id: string): Promise<User> {
     return this.userService.delete(id);
+  }
+
+  @Query(() => User)
+  async login(
+    @Arg("options", () => LoginInput)
+    options: LoginInput
+  ): Promise<User> {
+    return this.userService.login(options);
   }
 
   @Query(() => [User])

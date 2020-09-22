@@ -9,14 +9,24 @@ export class ProfilePhotoService {
   constructor(private mediaService: MediaService) {}
 
   async create(options: CreateProfilePhotoInput): Promise<ProfilePhoto> {
-    const { url, public_id } = await this.mediaService.uploadProfileImage(
-      options
-    );
-    const newProfilePhoto: CreateProfilePhotoInput = {
-      data: url,
-      type: options.type,
-      publicId: public_id,
-    };
+    let newProfilePhoto: CreateProfilePhotoInput;
+    if (!options.data) {
+      newProfilePhoto = {
+        data:
+          "https://res.cloudinary.com/mascotas-perdidas/image/upload/v1600796210/profile/blank-profile-picture-973460_640_hs0ssr.png",
+        type: "image/png",
+        publicId: "profile/blank-profile-picture-973460_640_hs0ssr",
+      };
+    } else {
+      const { url, public_id } = await this.mediaService.uploadProfileImage(
+        options
+      );
+      newProfilePhoto = {
+        data: url,
+        type: options.type,
+        publicId: public_id,
+      };
+    }
     return ProfilePhoto.create(newProfilePhoto).save();
   }
 

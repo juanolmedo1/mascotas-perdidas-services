@@ -26,13 +26,17 @@ export class UserService {
     const { username, password } = options;
     const user = await this.checkLogin(username);
     if (!user) {
-      throw new UserInputError(ErrorMessages.INVALID_USERNAME);
+      throw new UserInputError(ErrorMessages.INVALID_USERNAME, {
+        invalidArg: "username",
+      });
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      throw new UserInputError(ErrorMessages.INVALID_PASSWORD);
+      throw new UserInputError(ErrorMessages.INVALID_PASSWORD, {
+        invalidArg: "password",
+      });
     }
 
     return user;
@@ -50,11 +54,15 @@ export class UserService {
     } = options;
     const emailExist = await this.getByEmail(email);
     if (emailExist) {
-      throw new UserInputError(ErrorMessages.EMAIL_EXIST);
+      throw new UserInputError(ErrorMessages.EMAIL_EXIST, {
+        invalidArg: "email",
+      });
     }
     const usernameExist = await this.getByUsername(username);
     if (usernameExist) {
-      throw new UserInputError(ErrorMessages.USERNAME_EXIST);
+      throw new UserInputError(ErrorMessages.USERNAME_EXIST, {
+        invalidArg: "username",
+      });
     }
     const newProfilePhoto: CreateProfilePhotoInput = {
       data,
