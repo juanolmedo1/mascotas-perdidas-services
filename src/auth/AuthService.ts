@@ -22,28 +22,10 @@ const isAuth: MiddlewareFn<MyContext> = ({ context }, next) => {
 };
 
 const createAccessToken = (user: User) => {
-  const {
-    id,
-    firstName,
-    lastName,
-    province,
-    location,
-    email,
-    username,
-    phoneNumber,
-    dateOfBirth,
-  } = user;
+  const { id } = user;
   return sign(
     {
       id,
-      firstName,
-      lastName,
-      province,
-      location,
-      email,
-      username,
-      phoneNumber,
-      dateOfBirth,
     },
     process.env.ACCESS_TOKEN_SECRET!,
     {
