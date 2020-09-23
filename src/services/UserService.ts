@@ -12,10 +12,14 @@ import bcrypt from "bcryptjs";
 import { UserInputError } from "apollo-server-core";
 import { LoginResponse } from "@src/auth/LoginResponse";
 import AuthService from "@src/auth/AuthService";
+import { PublicationService } from "@src/services/PublicationService";
 
 @Service()
 export class UserService {
-  constructor(private profilePhotoService: ProfilePhotoService) {}
+  constructor(
+    private profilePhotoService: ProfilePhotoService,
+    private publicationService: PublicationService
+  ) {}
 
   async login(
     @Arg("options", () => LoginInput)
@@ -24,13 +28,17 @@ export class UserService {
     const { username, password } = options;
     const user = await this.checkLogin(username);
     if (!user) {
-      throw new UserInputError(ErrorMessages.INVALID_USERNAME);
+      throw new UserInputError(ErrorMessages.INVALID_USERNAME, {
+        invalidArg: "username",
+      });
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      throw new UserInputError(ErrorMessages.INVALID_PASSWORD);
+      throw new UserInputError(ErrorMessages.INVALID_PASSWORD, {
+        invalidArg: "password",
+      });
     }
 
     return {
@@ -51,11 +59,15 @@ export class UserService {
     } = options;
     const emailExist = await this.getByEmail(email);
     if (emailExist) {
-      throw new UserInputError(ErrorMessages.EMAIL_EXIST);
+      throw new UserInputError(ErrorMessages.EMAIL_EXIST, {
+        invalidArg: "email",
+      });
     }
     const usernameExist = await this.getByUsername(username);
     if (usernameExist) {
-      throw new UserInputError(ErrorMessages.USERNAME_EXIST);
+      throw new UserInputError(ErrorMessages.USERNAME_EXIST, {
+        invalidArg: "username",
+      });
     }
     const newProfilePhoto: CreateProfilePhotoInput = {
       data,
@@ -75,7 +87,9 @@ export class UserService {
     if (!deletedUser) {
       throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     }
+    await this.publicationService.deleteAllFromUser(deletedUser);
     await User.delete(id);
+    await this.profilePhotoService.delete(deletedUser.profilePictureId);
     return deletedUser;
   }
 

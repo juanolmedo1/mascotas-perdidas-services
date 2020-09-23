@@ -28,14 +28,6 @@ export class UserResolver implements ResolverInterface<User> {
     private profilePhotoService: ProfilePhotoService
   ) {}
 
-  @Mutation(() => LoginResponse)
-  async login(
-    @Arg("options", () => LoginInput)
-    options: LoginInput
-  ): Promise<LoginResponse> {
-    return this.userService.login(options);
-  }
-
   @Mutation(() => User)
   async createUser(
     @Arg("options", () => CreateUserInput)
@@ -55,6 +47,14 @@ export class UserResolver implements ResolverInterface<User> {
   @Mutation(() => User)
   async deleteUser(@Arg("id", () => String) id: string): Promise<User> {
     return this.userService.delete(id);
+  }
+
+  @Query(() => LoginResponse)
+  async login(
+    @Arg("options", () => LoginInput)
+    options: LoginInput
+  ): Promise<LoginResponse> {
+    return this.userService.login(options);
   }
 
   @Query(() => [User])

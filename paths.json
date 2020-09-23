@@ -4,7 +4,9 @@
     "paths": {
       "@src/*": ["src/*"],
       "@entity/*": ["src/entity/*"],
-      "@resolvers/*": ["src/resolvers/*"]
+      "@resolvers/*": ["src/resolvers/*"],
+      "@auth/*": ["src/auth/*"],
+      "@types/*": ["src/types/*"]
     }
   }
 }

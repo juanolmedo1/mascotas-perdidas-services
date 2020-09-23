@@ -11,8 +11,7 @@ export class PetService {
   constructor(private petPhotoService: PetPhotoService) {}
 
   async create(
-    @Arg("options", () => CreatePetInput)
-    options: CreatePetInput
+    @Arg("options", () => CreatePetInput) options: CreatePetInput
   ): Promise<Pet> {
     const pet = await Pet.create(options).save();
     const { id } = pet;
@@ -21,7 +20,7 @@ export class PetService {
       const newPhoto: CreatePetPhotoInput = {
         data: photo.data,
         type: photo.type,
-        petId: id
+        petId: id,
       };
 
       await this.petPhotoService.create(newPhoto);
@@ -33,6 +32,7 @@ export class PetService {
   async delete(@Arg("id", () => String) id: string): Promise<Pet> {
     const deletedPet = await Pet.findOne(id);
     if (!deletedPet) throw new Error("Pet not found.");
+    await this.petPhotoService.deleteAll(deletedPet);
     await Pet.delete(id);
     return deletedPet;
   }

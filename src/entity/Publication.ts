@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-  OneToOne
+  OneToOne,
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
@@ -15,7 +15,7 @@ import { Pet } from "./Pet";
 export enum PublicationType {
   LOST = "LOST",
   FOUND = "FOUND",
-  ADOPTION = "ADOPTION"
+  ADOPTION = "ADOPTION",
 }
 
 @ObjectType()
@@ -57,14 +57,15 @@ export class Publication extends BaseEntity {
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
+  @Field()
+  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  lastMatchingSearch: Date;
+
   @Column()
   petId: string;
 
   @Field(() => Pet)
-  @OneToOne(
-    () => Pet,
-    (pet: Pet) => pet.id
-  )
+  @OneToOne(() => Pet, (pet: Pet) => pet.id)
   @JoinColumn({ name: "petId" })
   pet: Pet;
 
@@ -72,11 +73,7 @@ export class Publication extends BaseEntity {
   creatorId: string;
 
   @Field(() => User)
-  @ManyToOne(
-    () => User,
-    (user: User) => user.publications,
-    { onDelete: "CASCADE" }
-  )
+  @ManyToOne(() => User, (user: User) => user.publications)
   @JoinColumn({ name: "creatorId" })
   creator: User;
 }

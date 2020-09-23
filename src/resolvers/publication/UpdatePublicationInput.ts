@@ -24,4 +24,7 @@ export class UpdatePublicationInput implements Partial<Publication> {
 
   @Field(() => String, { nullable: true })
   additionalInfo?: string;
+
+  @Field(() => Date, { nullable: true })
+  lastMatchingSearch?: Date;
 }

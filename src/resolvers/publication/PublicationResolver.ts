@@ -18,8 +18,9 @@ import { PublicationService } from "@src/services/PublicationService";
 import { UserService } from "@src/services/UserService";
 import { PetService } from "@src/services/PetService";
 import { Pet } from "@src/entity/Pet";
-import { GetPublicationsInput } from "./GetPublicationsInput";
 import AuthService from "@src/auth/AuthService";
+import { GetPublicationsInput } from "@resolvers/publication/GetPublicationsInput";
+import { GetMatchingsResponse } from "@resolvers/publication/GetMatchingsResponse";
 
 @Service()
 @Resolver(Publication)
@@ -85,11 +86,11 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     return this.publicationService.getFiltered(options);
   }
 
-  @Query(() => [Publication])
+  @Query(() => GetMatchingsResponse)
   async getMatchingPublications(
     @Arg("publicationId", () => String)
     publicationId: string
-  ): Promise<Publication[]> {
+  ): Promise<GetMatchingsResponse> {
     return this.publicationService.getMatchings(publicationId);
   }
 

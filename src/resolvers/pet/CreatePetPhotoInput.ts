@@ -11,4 +11,7 @@ export class CreatePetPhotoInput implements Partial<PetPhoto> {
 
   @Field()
   type: string;
+
+  @Field(() => String, { nullable: true })
+  publicId?: string;
 }

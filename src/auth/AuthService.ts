@@ -23,20 +23,12 @@ const isAuth: MiddlewareFn<MyContext> = ({ context }, next) => {
 
 const createAccessToken = (user: User) => {
   const { id } = user;
-  return sign(
-    {
-      id,
-    },
-    process.env.ACCESS_TOKEN_SECRET!,
-    {
-      expiresIn: "15m",
-    }
-  );
+  return sign({ id }, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: "15m" });
 };
 
 const createRefreshToken = (user: User) => {
   return sign({ userId: user.id }, process.env.REFRESH_TOKEN_SECRET!, {
-    expiresIn: "7d",
+    expiresIn: "999y",
   });
 };
 

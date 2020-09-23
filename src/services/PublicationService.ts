@@ -9,6 +9,8 @@ import { PetService } from "@src/services/PetService";
 import { GetPublicationsInput } from "@src/resolvers/publication/GetPublicationsInput";
 import { ColorService } from "@src/services/ColorService";
 import { PetGender, PetSize, PetType } from "@src/entity/Pet";
+import { User } from "@src/entity/User";
+import { GetMatchingsResponse } from "@src/resolvers/publication/GetMatchingsResponse";
 
 @Service()
 export class PublicationService {
@@ -29,7 +31,7 @@ export class PublicationService {
       location,
       phoneNumber,
       province,
-      reward
+      reward,
     } = options;
     const pet = await this.petService.create(petData);
     const publication = await Publication.create({
@@ -40,22 +42,36 @@ export class PublicationService {
       location,
       phoneNumber,
       province,
-      reward
+      reward,
     }).save();
 
     if (type === PublicationType.ADOPTION) {
       return [];
     }
-
     const { id } = publication;
-    return this.getMatchings(id);
+    const {
+      publicationsNotViewed,
+      publicationsViewed,
+    } = await this.getMatchings(id);
+
+    return [...publicationsNotViewed, ...publicationsViewed];
   }
 
   async delete(@Arg("id", () => String) id: string): Promise<Publication> {
     const deletedPublication = await Publication.findOne(id);
     if (!deletedPublication) throw new Error("Publication not found.");
     await Publication.delete(id);
+    await this.petService.delete(deletedPublication.petId);
     return deletedPublication;
+  }
+
+  async deleteAllFromUser({ id }: User): Promise<void> {
+    const publications = await Publication.find({
+      where: { creatorId: id },
+    });
+    for (const publication of publications) {
+      await this.delete(publication.id);
+    }
   }
 
   async getAll(
@@ -65,7 +81,7 @@ export class PublicationService {
     const { province, location } = options;
     return Publication.find({
       where: { province, location },
-      order: { createdAt: "DESC" }
+      order: { createdAt: "DESC" },
     });
   }
 
@@ -117,7 +133,7 @@ export class PublicationService {
           pubType: type,
           petType: petFilters.type,
           petGender: gender,
-          petSize: size
+          petSize: size,
         }
       )
       .orderBy("publication.createdAt", "DESC")
@@ -149,10 +165,10 @@ export class PublicationService {
   async getMatchings(
     @Arg("publicationId", () => String)
     publicationId: string
-  ): Promise<Publication[]> {
+  ): Promise<GetMatchingsResponse> {
     const publication = await Publication.findOne(publicationId);
     if (!publication) throw new Error("Publication was not found.");
-    const { id, province, location, petId } = publication;
+    const { id, province, location, petId, lastMatchingSearch } = publication;
     const pet = await this.petService.getOne(petId);
     if (!pet) throw new Error("Pet was not found.");
 
@@ -176,7 +192,7 @@ export class PublicationService {
         {
           petType: pet.type,
           petGender: [pet.gender, PetGender.UNDEFINED],
-          petSizes
+          petSizes,
         }
       )
       .orderBy("publication.createdAt", "DESC")
@@ -203,13 +219,28 @@ export class PublicationService {
       }
     });
 
-    return selectedPublications;
+    const lastViewed = (publication: Publication) => {
+      return publication.createdAt.getTime() <= lastMatchingSearch.getTime();
+    };
+    const lastViewedIndex = selectedPublications.findIndex(lastViewed);
+    const publicationsNotViewed = selectedPublications.slice(
+      0,
+      lastViewedIndex
+    );
+    const publicationsViewed = selectedPublications.slice(
+      lastViewedIndex,
+      selectedPublications.length
+    );
+
+    await this.update(publicationId, { lastMatchingSearch: new Date() });
+
+    return { publicationsNotViewed, publicationsViewed };
   }
 
   async getUserPublications(id: String): Promise<Publication[]> {
     return Publication.find({
       where: { creatorId: id },
-      order: { createdAt: "DESC" }
+      order: { createdAt: "DESC" },
     });
   }
 
