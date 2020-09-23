@@ -9,7 +9,7 @@ import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 import { LoginInput } from "@src/resolvers/user/LoginInput";
 import { ErrorMessages } from "@src/types/ErrorMessages";
 import bcrypt from "bcryptjs";
-import { UserInputError } from "apollo-server-core";
+import { AuthenticationError, UserInputError } from "apollo-server-core";
 import { LoginResponse } from "@src/auth/LoginResponse";
 import AuthService from "@src/auth/AuthService";
 import { PublicationService } from "@src/services/PublicationService";
@@ -40,11 +40,12 @@ export class UserService {
         invalidArg: "password",
       });
     }
-
-    return {
+    const response: LoginResponse = {
       accessToken: AuthService.createAccessToken(user),
       refreshToken: AuthService.createRefreshToken(user),
     };
+
+    return response;
   }
 
   async create(
@@ -80,6 +81,14 @@ export class UserService {
       profilePictureId: id,
       password: hashedPassword,
     }).save();
+  }
+
+  async me(@Arg("id", () => String) id: string): Promise<User> {
+    const user = await User.findOne(id);
+    if (!user) {
+      throw new AuthenticationError(ErrorMessages.USER_NOT_FOUND);
+    }
+    return user;
   }
 
   async delete(@Arg("id", () => String) id: string): Promise<User> {

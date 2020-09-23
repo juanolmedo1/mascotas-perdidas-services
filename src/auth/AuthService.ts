@@ -12,7 +12,17 @@ const isAuth: MiddlewareFn<MyContext> = ({ context }, next) => {
   }
   try {
     const token = authorization.split(" ")[1];
-    const payload = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+    const payload = verify(
+      token,
+      process.env.ACCESS_TOKEN_SECRET!,
+      (error, decoded) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log(decoded);
+        }
+      }
+    );
     context.payload = payload as any;
   } catch (err) {
     throw new AuthenticationError(ErrorMessages.USER_NOT_AUTHENTICATED);
@@ -28,7 +38,7 @@ const createAccessToken = (user: User) => {
 
 const createRefreshToken = (user: User) => {
   return sign({ userId: user.id }, process.env.REFRESH_TOKEN_SECRET!, {
-    expiresIn: "999y",
+    expiresIn: "9999y",
   });
 };
 

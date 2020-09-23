@@ -6,6 +6,8 @@ import {
   FieldResolver,
   ResolverInterface,
   Root,
+  Ctx,
+  UseMiddleware,
 } from "type-graphql";
 import { User } from "@entity/User";
 import { Publication } from "@entity/Publication";
@@ -18,6 +20,7 @@ import { ProfilePhoto } from "@src/entity/ProfilePhoto";
 import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 import { LoginInput } from "@resolvers/user/LoginInput";
 import { LoginResponse } from "@src/auth/LoginResponse";
+import AuthService from "@src/auth/AuthService";
 
 @Service()
 @Resolver(User)
@@ -55,6 +58,12 @@ export class UserResolver implements ResolverInterface<User> {
     options: LoginInput
   ): Promise<LoginResponse> {
     return this.userService.login(options);
+  }
+
+  @Query(() => User)
+  @UseMiddleware(AuthService.isAuth)
+  async me(@Ctx("id") id: string): Promise<User> {
+    return this.userService.me(id);
   }
 
   @Query(() => [User])
