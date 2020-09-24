@@ -11,12 +11,17 @@ import { ColorService } from "@src/services/ColorService";
 import { PetGender, PetSize, PetType } from "@src/entity/Pet";
 import { User } from "@src/entity/User";
 import { GetMatchingsResponse } from "@src/resolvers/publication/GetMatchingsResponse";
+import { FavoriteService } from "@src/services/FavoriteService";
+import { Favorite } from "@src/entity/Favorite";
+import { CreateUserFavoritePublication } from "@src/resolvers/publication/CreateUserFavoritePublication";
+import { DeleteUserFavoritePublication } from "@src/resolvers/publication/DeleteUserFavoritePublication";
 
 @Service()
 export class PublicationService {
   constructor(
     private petService: PetService,
-    private colorService: ColorService
+    private colorService: ColorService,
+    private favoriteService: FavoriteService
   ) {}
 
   async create(
@@ -242,6 +247,25 @@ export class PublicationService {
       where: { creatorId: id },
       order: { createdAt: "DESC" },
     });
+  }
+
+  async getUserFavoritePublications(userId: String): Promise<Publication[]> {
+    return Publication.createQueryBuilder("publication")
+      .leftJoinAndSelect("publication.userConnection", "favorite")
+      .where("favorite.userId = :userId", { userId })
+      .getMany();
+  }
+
+  async addUserFavoritePublication(
+    options: CreateUserFavoritePublication
+  ): Promise<Favorite> {
+    return this.favoriteService.create(options);
+  }
+
+  async removeUserFavoritePublication(
+    options: DeleteUserFavoritePublication
+  ): Promise<Favorite> {
+    return this.favoriteService.delete(options);
   }
 
   async addComplaint(

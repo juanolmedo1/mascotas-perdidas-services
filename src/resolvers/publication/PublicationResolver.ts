@@ -19,6 +19,9 @@ import { PetService } from "@src/services/PetService";
 import { Pet } from "@src/entity/Pet";
 import { GetPublicationsInput } from "@resolvers/publication/GetPublicationsInput";
 import { GetMatchingsResponse } from "@resolvers/publication/GetMatchingsResponse";
+import { Favorite } from "@src/entity/Favorite";
+import { CreateUserFavoritePublication } from "@resolvers/publication/CreateUserFavoritePublication";
+import { DeleteUserFavoritePublication } from "@resolvers/publication/DeleteUserFavoritePublication";
 
 @Service()
 @Resolver(Publication)
@@ -59,6 +62,22 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     return this.publicationService.addComplaint(id);
   }
 
+  @Mutation(() => Favorite)
+  async addUserFavoritePublication(
+    @Arg("options", () => CreateUserFavoritePublication)
+    options: CreateUserFavoritePublication
+  ): Promise<Favorite> {
+    return this.publicationService.addUserFavoritePublication(options);
+  }
+
+  @Mutation(() => Favorite)
+  async removeUserFavoritePublication(
+    @Arg("options", () => DeleteUserFavoritePublication)
+    options: DeleteUserFavoritePublication
+  ): Promise<Favorite> {
+    return this.publicationService.removeUserFavoritePublication(options);
+  }
+
   @Query(() => [Publication])
   async getPublications(
     @Arg("options", () => GetPublicationsInput)
@@ -96,6 +115,14 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     userId: string
   ): Promise<Publication[]> {
     return this.publicationService.getUserPublications(userId);
+  }
+
+  @Query(() => [Publication])
+  async getUserFavoritePublications(
+    @Arg("userId", () => String)
+    userId: string
+  ): Promise<Publication[]> {
+    return this.publicationService.getUserFavoritePublications(userId);
   }
 
   @FieldResolver()

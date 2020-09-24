@@ -7,10 +7,12 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  OneToMany,
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
-import { Pet } from "./Pet";
+import { Pet } from "@entity/Pet";
+import { Favorite } from "@entity/Favorite";
 
 export enum PublicationType {
   LOST = "LOST",
@@ -76,4 +78,7 @@ export class Publication extends BaseEntity {
   @ManyToOne(() => User, (user: User) => user.publications)
   @JoinColumn({ name: "creatorId" })
   creator: User;
+
+  @OneToMany(() => Favorite, (fav) => fav.publication)
+  userConnection: Favorite[];
 }
