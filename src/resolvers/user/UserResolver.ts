@@ -40,6 +40,7 @@ export class UserResolver implements ResolverInterface<User> {
   }
 
   @Mutation(() => User)
+  @UseMiddleware(AuthService.isAuth)
   async updateUser(
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdateUserInput) input: UpdateUserInput
@@ -48,6 +49,7 @@ export class UserResolver implements ResolverInterface<User> {
   }
 
   @Mutation(() => User)
+  @UseMiddleware(AuthService.isAuth)
   async deleteUser(@Arg("id", () => String) id: string): Promise<User> {
     return this.userService.delete(id);
   }
@@ -60,21 +62,15 @@ export class UserResolver implements ResolverInterface<User> {
     return this.userService.login(options);
   }
 
-  @Query(() => User)
-  @UseMiddleware(AuthService.isAuth)
-  async me(@Ctx("id") id: string): Promise<User> {
-    return this.userService.me(id);
-  }
-
   @Query(() => [User])
+  @UseMiddleware(AuthService.isAuth)
   async getUsers(): Promise<User[]> {
     return this.userService.getAll();
   }
 
   @Query(() => User)
-  async getUser(
-    @Arg("id", () => String) id: string
-  ): Promise<User | undefined> {
+  @UseMiddleware(AuthService.isAuth)
+  async getUser(@Ctx("id") id: string): Promise<User> {
     return this.userService.getOne(id);
   }
 

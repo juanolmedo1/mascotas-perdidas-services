@@ -13,12 +13,14 @@ import { AuthenticationError, UserInputError } from "apollo-server-core";
 import { LoginResponse } from "@src/auth/LoginResponse";
 import AuthService from "@src/auth/AuthService";
 import { PublicationService } from "@src/services/PublicationService";
+import { TokenService } from "@src/services/TokenService";
 
 @Service()
 export class UserService {
   constructor(
     private profilePhotoService: ProfilePhotoService,
-    private publicationService: PublicationService
+    private publicationService: PublicationService,
+    private tokenService: TokenService
   ) {}
 
   async login(
@@ -40,12 +42,12 @@ export class UserService {
         invalidArg: "password",
       });
     }
-    const response: LoginResponse = {
-      accessToken: AuthService.createAccessToken(user),
-      refreshToken: AuthService.createRefreshToken(user),
-    };
-
-    return response;
+    const accessToken = AuthService.createAccessToken(user);
+    await this.tokenService.createToken({
+      userId: user.id,
+      token: accessToken,
+    });
+    return { accessToken };
   }
 
   async create(
@@ -83,20 +85,13 @@ export class UserService {
     }).save();
   }
 
-  async me(@Arg("id", () => String) id: string): Promise<User> {
-    const user = await User.findOne(id);
-    if (!user) {
-      throw new AuthenticationError(ErrorMessages.USER_NOT_FOUND);
-    }
-    return user;
-  }
-
   async delete(@Arg("id", () => String) id: string): Promise<User> {
     const deletedUser = await User.findOne(id);
     if (!deletedUser) {
       throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     }
     await this.publicationService.deleteAllFromUser(deletedUser);
+    await this.tokenService.deleteTokensFromUser(id);
     await User.delete(id);
     await this.profilePhotoService.delete(deletedUser.profilePictureId);
     return deletedUser;
@@ -118,8 +113,12 @@ export class UserService {
     return User.find();
   }
 
-  async getOne(@Arg("id", () => String) id: string): Promise<User | undefined> {
-    return User.findOne(id);
+  async getOne(@Arg("id", () => String) id: string): Promise<User> {
+    const user = await User.findOne(id);
+    if (!user) {
+      throw new AuthenticationError(ErrorMessages.USER_NOT_FOUND);
+    }
+    return user;
   }
 
   async checkLogin(

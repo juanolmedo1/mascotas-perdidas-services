@@ -10,7 +10,8 @@ import {
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
-import { ProfilePhoto } from "./ProfilePhoto";
+import { ProfilePhoto } from "@entity/ProfilePhoto";
+import { Token } from "@entity/Token";
 
 @ObjectType()
 @Entity()
@@ -73,4 +74,7 @@ export class User extends BaseEntity {
     (publication: Publication) => publication.creator
   )
   publications: Publication[];
+
+  @OneToMany(() => Token, (token) => token.user)
+  tokens: Token[];
 }

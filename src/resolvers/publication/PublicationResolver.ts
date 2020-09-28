@@ -41,6 +41,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Mutation(() => Publication)
+  @UseMiddleware(AuthService.isAuth)
   async updatePublication(
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdatePublicationInput) input: UpdatePublicationInput
@@ -49,6 +50,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Mutation(() => Publication)
+  @UseMiddleware(AuthService.isAuth)
   async deletePublication(
     @Arg("id", () => String) id: string
   ): Promise<Publication> {
@@ -56,6 +58,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Mutation(() => Publication)
+  @UseMiddleware(AuthService.isAuth)
   async addComplaint(
     @Arg("id", () => String) id: string
   ): Promise<Publication> {
@@ -72,6 +75,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => Publication)
+  @UseMiddleware(AuthService.isAuth)
   async getPublication(
     @Arg("id", () => String) id: string
   ): Promise<Publication | undefined> {
@@ -79,6 +83,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => [Publication])
+  @UseMiddleware(AuthService.isAuth)
   async getFilteredPublications(
     @Arg("options", () => FilterPublicationsInput)
     options: FilterPublicationsInput
@@ -87,6 +92,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => GetMatchingsResponse)
+  @UseMiddleware(AuthService.isAuth)
   async getMatchingPublications(
     @Arg("publicationId", () => String)
     publicationId: string
@@ -95,6 +101,7 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => [Publication])
+  @UseMiddleware(AuthService.isAuth)
   async getUserPublications(
     @Arg("userId", () => String)
     userId: string
