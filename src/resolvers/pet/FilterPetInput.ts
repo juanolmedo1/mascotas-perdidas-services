@@ -9,6 +9,9 @@ export class FilterPetInput {
   @Field(() => [String])
   gender: PetGender[];
 
+  @Field()
+  breed: string;
+
   @Field(() => [String])
   size: PetSize[];
 

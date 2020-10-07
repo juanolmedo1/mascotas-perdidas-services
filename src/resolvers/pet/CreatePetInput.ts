@@ -13,6 +13,9 @@ export class CreatePetInput implements Partial<Pet> {
   @Field(() => String)
   size: PetSize;
 
+  @Field()
+  breed: string;
+
   @Field(() => [String])
   color: string[];
 
