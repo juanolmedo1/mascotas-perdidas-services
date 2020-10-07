@@ -4,6 +4,7 @@ import * as TFNode from "@tensorflow/tfjs-node";
 import { Field, ObjectType } from "type-graphql";
 import { MediaService } from "@src/services/MediaService";
 import fs from "fs";
+import DogTranslations from "@src/translations/dogs";
 
 @ObjectType()
 export class ImagePredictionWithoutPhoto {
@@ -18,6 +19,9 @@ export class ImagePredictionWithoutPhoto {
 export class ImagePrediction {
   @Field()
   label: string;
+
+  @Field()
+  labelSpanish: string;
 
   @Field()
   prob: number;
@@ -130,7 +134,14 @@ export class MLModelService {
       .slice(0, 3);
     let response: ImagePrediction[] = [];
     for (let prediction of sortedPredictions) {
-      let newPrediction: ImagePrediction = { ...prediction, photo: "" };
+      const translateObject = DogTranslations.find(
+        ({ english }) => english === prediction.label
+      );
+      let newPrediction: ImagePrediction = {
+        ...prediction,
+        labelSpanish: translateObject!.spanish,
+        photo: "",
+      };
       const photo = await this.mediaService.getPhotosByTag(prediction.label);
       newPrediction.photo = photo.resources[0].url;
       response.push(newPrediction);
@@ -158,7 +169,11 @@ export class MLModelService {
       .slice(0, 3);
     let response: ImagePrediction[] = [];
     for (let prediction of sortedPredictions) {
-      let newPrediction: ImagePrediction = { ...prediction, photo: "" };
+      let newPrediction: ImagePrediction = {
+        ...prediction,
+        labelSpanish: "",
+        photo: "",
+      };
       const photo = await this.mediaService.getPhotosByTag(prediction.label);
       newPrediction.photo = photo.resources[0].url;
       response.push(newPrediction);
