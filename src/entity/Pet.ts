@@ -56,6 +56,10 @@ export class Pet extends BaseEntity {
   @Column()
   collar: boolean;
 
+  @Field()
+  @Column()
+  breed: string;
+
   @OneToOne(() => Publication, (publication: Publication) => publication.pet)
   publication: Publication;
 

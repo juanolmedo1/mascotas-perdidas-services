@@ -18,6 +18,9 @@ export class UpdatePetInput implements Partial<Pet> {
   @Field(() => Boolean, { nullable: true })
   collar?: boolean;
 
+  @Field(() => String, { nullable: true })
+  breed?: string;
+
   @Field(() => [String], { nullable: true })
   photosData?: string[];
 }
