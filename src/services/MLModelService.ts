@@ -55,7 +55,7 @@ export class MLModelService {
     const text = fs.readFileSync(dictURL, {
       encoding: "utf-8",
     });
-    return text.trim().split("\n");
+    return text.trim().replace(/(\r)/gm, "").split("\n");
   }
 
   private async initModel(
