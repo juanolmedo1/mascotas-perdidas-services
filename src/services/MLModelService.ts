@@ -5,6 +5,7 @@ import { Field, ObjectType } from "type-graphql";
 import { MediaService } from "@src/services/MediaService";
 import fs from "fs";
 import DogTranslations from "@src/translations/dogs";
+import CatTranslations from "@src/translations/cats";
 
 @ObjectType()
 export class ImagePredictionWithoutPhoto {
@@ -169,9 +170,12 @@ export class MLModelService {
       .slice(0, 3);
     let response: ImagePrediction[] = [];
     for (let prediction of sortedPredictions) {
+      const translateObject = CatTranslations.find(
+        ({ english }) => english === prediction.label
+      );
       let newPrediction: ImagePrediction = {
         ...prediction,
-        labelSpanish: "",
+        labelSpanish: translateObject!.spanish,
         photo: "",
       };
       const photo = await this.mediaService.getPhotosByTag(prediction.label);
