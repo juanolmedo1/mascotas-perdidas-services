@@ -5,6 +5,7 @@ import {
   ResolverInterface,
   Query,
   Arg,
+  Mutation,
 } from "type-graphql";
 import { Service } from "typedi";
 import { PetPhoto } from "@src/entity/PetPhoto";
@@ -16,14 +17,30 @@ import {
   MLModelService,
   TypeAndBreed,
 } from "@src/services/MLModelService";
+import { PetService } from "@src/services/PetService";
+import { CommonValues } from "@src/entity/CommonValues";
 
 @Service()
 @Resolver(Pet)
 export class PetResolver implements ResolverInterface<Pet> {
   constructor(
     private petPhotoService: PetPhotoService,
-    private MLModelService: MLModelService
+    private MLModelService: MLModelService,
+    private petService: PetService
   ) {}
+
+  @Query(() => CommonValues)
+  async getCommonValues(
+    @Arg("breed", () => String) breed: string
+  ): Promise<CommonValues> {
+    return this.petService.getCommonValues(breed);
+  }
+
+  @Mutation(() => Boolean)
+  async generateRandomCommonValues(): Promise<boolean> {
+    await this.petService.generateRandomCommonValues();
+    return true;
+  }
 
   @Query(() => TypeAndBreed)
   async getTypeAndBreed(
