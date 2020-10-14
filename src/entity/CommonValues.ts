@@ -22,7 +22,7 @@ export class CommonValues extends BaseEntity {
   @Column({ type: "enum", enum: PetSize })
   size: PetSize;
 
-  @Field()
-  @Column()
-  color: string;
+  @Field(() => [String])
+  @Column("simple-array")
+  color: string[];
 }

@@ -13,6 +13,6 @@ export class UpdateCommonValueInput implements Partial<CommonValues> {
   @Field(() => String, { nullable: true })
   size?: PetSize;
 
-  @Field(() => String, { nullable: true })
-  color?: string;
+  @Field(() => [String], { nullable: true })
+  color?: string[];
 }

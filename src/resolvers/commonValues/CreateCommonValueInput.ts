@@ -13,6 +13,6 @@ export class CreateCommonValueInput implements Partial<CommonValues> {
   @Field(() => String)
   size: PetSize;
 
-  @Field()
-  color: string;
+  @Field(() => [String])
+  color: string[];
 }

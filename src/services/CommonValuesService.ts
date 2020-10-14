@@ -45,7 +45,7 @@ export class CommonValuesService {
       const newValue : CreateCommonValueInput = {
         breed: breed.english,
         size: randomSize as PetSize,
-        color: randomColor,
+        color: [randomColor],
         gender: randomGender as PetGender
       }
       await this.create(newValue);
@@ -56,7 +56,7 @@ export class CommonValuesService {
       const newValue : CreateCommonValueInput = {
         breed: breed.english,
         size: PetSize.MEDIUM,
-        color: randomColor,
+        color: [randomColor],
         gender: randomGender as PetGender
       }
       await this.create(newValue);
