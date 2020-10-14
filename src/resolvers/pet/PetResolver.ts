@@ -42,6 +42,12 @@ export class PetResolver implements ResolverInterface<Pet> {
     return true;
   }
 
+  @Mutation(() => Boolean)
+  async updateCommonValuesTable(): Promise<boolean> {
+    await this.petService.updateCommonValuesTable();
+    return true;
+  }
+
   @Query(() => TypeAndBreed)
   async getTypeAndBreed(
     @Arg("image", () => String) image: string
