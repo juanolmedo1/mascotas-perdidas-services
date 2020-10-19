@@ -12,6 +12,7 @@ import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
 import { ProfilePhoto } from "@entity/ProfilePhoto";
 import { Favorite } from "@entity/Favorite";
+import { Ubication } from "@entity/Ubication";
 
 @ObjectType()
 @Entity()
@@ -27,14 +28,6 @@ export class User extends BaseEntity {
   @Field()
   @Column()
   lastName: string;
-
-  @Field()
-  @Column()
-  province: string;
-
-  @Field()
-  @Column()
-  location: string;
 
   @Field()
   @Column()
@@ -59,6 +52,14 @@ export class User extends BaseEntity {
   @Field()
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
+
+  @Column("uuid")
+  ubicationId: string;
+
+  @Field(() => Ubication)
+  @OneToOne(() => Ubication, (ubication: Ubication) => ubication.id)
+  @JoinColumn({ name: "ubicationId" })
+  ubication: Ubication;
 
   @Column("uuid")
   profilePictureId: string;

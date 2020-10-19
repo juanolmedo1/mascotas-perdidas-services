@@ -1,6 +1,7 @@
 import { InputType, Field } from "type-graphql";
 import { PublicationType, Publication } from "@src/entity/Publication";
 import { CreatePetInput } from "@src/resolvers/pet/CreatePetInput";
+import { CreateUbicationInput } from "@resolvers/ubication/CreateUbicationInput";
 
 @InputType()
 export class CreatePublicationInput implements Partial<Publication> {
@@ -13,11 +14,8 @@ export class CreatePublicationInput implements Partial<Publication> {
   @Field(() => CreatePetInput)
   petData: CreatePetInput;
 
-  @Field()
-  province: string;
-
-  @Field()
-  location: string;
+  @Field(() => CreateUbicationInput)
+  ubicationData: CreateUbicationInput;
 
   @Field()
   phoneNumber: string;

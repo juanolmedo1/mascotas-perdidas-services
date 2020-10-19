@@ -6,7 +6,6 @@ import { UpdatePublicationInput } from "@src/resolvers/publication/UpdatePublica
 import { FilterPublicationsInput } from "@src/resolvers/publication/FilterPublicationsInput";
 import { getManager } from "typeorm";
 import { PetService } from "@src/services/PetService";
-import { GetPublicationsInput } from "@src/resolvers/publication/GetPublicationsInput";
 import { ColorService } from "@src/services/ColorService";
 import { PetGender, PetSize, PetType } from "@src/entity/Pet";
 import { User } from "@src/entity/User";
@@ -15,13 +14,15 @@ import { FavoriteService } from "@src/services/FavoriteService";
 import { Favorite } from "@src/entity/Favorite";
 import { CreateUserFavoritePublication } from "@src/resolvers/publication/CreateUserFavoritePublication";
 import { DeleteUserFavoritePublication } from "@src/resolvers/publication/DeleteUserFavoritePublication";
+import { UbicationService } from "@src/services/UbicationService";
 
 @Service()
 export class PublicationService {
   constructor(
     private petService: PetService,
     private colorService: ColorService,
-    private favoriteService: FavoriteService
+    private favoriteService: FavoriteService,
+    private ubicationService: UbicationService
   ) {}
 
   async create(
@@ -33,20 +34,19 @@ export class PublicationService {
       additionalInfo,
       type,
       creatorId,
-      location,
+      ubicationData: { latitude, longitude },
       phoneNumber,
-      province,
       reward,
     } = options;
     const pet = await this.petService.create(petData);
+    const ubication = await this.ubicationService.create(latitude, longitude);
     const publication = await Publication.create({
       petId: pet.id,
+      ubicationId: ubication.id,
       additionalInfo,
       type,
       creatorId,
-      location,
       phoneNumber,
-      province,
       reward,
     }).save();
 
@@ -67,6 +67,7 @@ export class PublicationService {
     if (!deletedPublication) throw new Error("Publication not found.");
     await Publication.delete(id);
     await this.petService.delete(deletedPublication.petId);
+    await this.ubicationService.delete(deletedPublication.ubicationId);
     return deletedPublication;
   }
 
@@ -79,17 +80,6 @@ export class PublicationService {
     }
   }
 
-  async getAll(
-    @Arg("options", () => GetPublicationsInput)
-    options: GetPublicationsInput
-  ): Promise<Publication[]> {
-    const { province, location } = options;
-    return Publication.find({
-      where: { province, location },
-      order: { createdAt: "DESC" },
-    });
-  }
-
   async update(
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdatePublicationInput) input: UpdatePublicationInput
@@ -97,11 +87,14 @@ export class PublicationService {
     await Publication.update({ id }, input);
     const updatedPublication = await Publication.findOne(id);
     if (!updatedPublication) throw new Error("Publication not found.");
-    const pet = await this.petService.getOne(updatedPublication.petId);
-    if (!pet) throw new Error("Pet not found.");
-    const { petData } = input;
+    const petId = updatedPublication.petId;
+    const ubicationId = updatedPublication.ubicationId;
+    const { petData, ubicationData } = input;
     if (petData) {
-      await this.petService.update(pet.id, petData);
+      await this.petService.update(petId, petData);
+    }
+    if (ubicationData) {
+      await this.ubicationService.update(ubicationId, ubicationData);
     }
 
     return updatedPublication;
@@ -111,8 +104,18 @@ export class PublicationService {
     @Arg("options", () => FilterPublicationsInput)
     options: FilterPublicationsInput
   ): Promise<Publication[]> {
-    const { petFilters, province, location, type } = options;
+    const {
+      petFilters,
+      type,
+      ubicationData: { latitude, longitude },
+    } = options;
     const { gender, size } = petFilters;
+    const {
+      country,
+      administrativeAreaLevel1,
+      administrativeAreaLevel2,
+      locality,
+    } = await this.ubicationService.getCurrent(latitude, longitude);
 
     const publicationType = type.length
       ? `AND publication.type IN (:...pubType)`
@@ -130,11 +133,14 @@ export class PublicationService {
 
     return Publication.createQueryBuilder("publication")
       .leftJoinAndSelect("publication.pet", "pet")
+      .leftJoinAndSelect("publication.ubication", "ubication")
       .where(
-        `publication.province = :province AND publication.location = :location ${publicationType} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter}`,
+        `ubication.country = :country AND ubication.administrativeAreaLevel1 = :administrativeAreaLevel1 AND ubication.administrativeAreaLevel2 = :administrativeAreaLevel2 AND ubication.locality = :locality ${publicationType} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter}`,
         {
-          province,
-          location,
+          country,
+          administrativeAreaLevel1,
+          administrativeAreaLevel2,
+          locality,
           pubType: type,
           petType: petFilters.type,
           petGender: gender,
@@ -173,9 +179,14 @@ export class PublicationService {
   ): Promise<GetMatchingsResponse> {
     const publication = await Publication.findOne(publicationId);
     if (!publication) throw new Error("Publication was not found.");
-    const { id, province, location, petId, lastMatchingSearch } = publication;
+    const { id, ubicationId, petId, lastMatchingSearch } = publication;
     const pet = await this.petService.getOne(petId);
-    if (!pet) throw new Error("Pet was not found.");
+    const {
+      country,
+      administrativeAreaLevel1,
+      administrativeAreaLevel2,
+      locality,
+    } = await this.ubicationService.getOne(ubicationId);
 
     const publicationType =
       publication.type === PublicationType.FOUND
@@ -188,9 +199,10 @@ export class PublicationService {
       "publication"
     )
       .leftJoinAndSelect("publication.pet", "pet")
+      .leftJoinAndSelect("publication.ubication", "ubication")
       .where(
-        "publication.id <> :id AND publication.province = :province AND publication.location = :location AND publication.type IN (:...publicationType)",
-        { id, province, location, publicationType }
+        "publication.id <> :id AND publication.type IN (:...publicationType)",
+        { id, publicationType }
       )
       .andWhere(
         "pet.type = :petType AND pet.gender IN (:...petGender) AND pet.size IN (:...petSizes)",
@@ -198,6 +210,15 @@ export class PublicationService {
           petType: pet.type,
           petGender: [pet.gender, PetGender.UNDEFINED],
           petSizes,
+        }
+      )
+      .andWhere(
+        "ubication.country = :country AND ubication.administrativeAreaLevel1 = :administrativeAreaLevel1 AND ubication.administrativeAreaLevel2 = :administrativeAreaLevel2 AND ubication.locality = :locality ",
+        {
+          country,
+          administrativeAreaLevel1,
+          administrativeAreaLevel2,
+          locality,
         }
       )
       .orderBy("publication.createdAt", "DESC")

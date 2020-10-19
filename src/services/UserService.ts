@@ -11,12 +11,14 @@ import { ErrorMessages } from "@src/types/ErrorMessages";
 import bcrypt from "bcryptjs";
 import { UserInputError } from "apollo-server-core";
 import { PublicationService } from "@src/services/PublicationService";
+import { UbicationService } from "@src/services/UbicationService";
 
 @Service()
 export class UserService {
   constructor(
     private profilePhotoService: ProfilePhotoService,
-    private publicationService: PublicationService
+    private publicationService: PublicationService,
+    private ubicationService: UbicationService
   ) {}
 
   async login(
@@ -48,6 +50,7 @@ export class UserService {
   ): Promise<User> {
     const {
       photo: { data, type },
+      ubicationData: { latitude, longitude },
       password,
       email,
       username,
@@ -64,6 +67,10 @@ export class UserService {
         invalidArg: "username",
       });
     }
+    const userUbication = await this.ubicationService.create(
+      latitude,
+      longitude
+    );
     const newProfilePhoto: CreateProfilePhotoInput = {
       data,
       type,
@@ -72,6 +79,7 @@ export class UserService {
     const { id } = await this.profilePhotoService.create(newProfilePhoto);
     return User.create({
       ...options,
+      ubicationId: userUbication.id,
       profilePictureId: id,
       password: hashedPassword,
     }).save();
@@ -85,6 +93,7 @@ export class UserService {
     await this.publicationService.deleteAllFromUser(deletedUser);
     await User.delete(id);
     await this.profilePhotoService.delete(deletedUser.profilePictureId);
+    await this.ubicationService.delete(deletedUser.ubicationId);
     return deletedUser;
   }
 
@@ -92,11 +101,21 @@ export class UserService {
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdateUserInput) input: UpdateUserInput
   ): Promise<User> {
-    await User.update(id, input);
+    const { ubicationData, ...others } = input;
+    if (Object.keys(others).length) {
+      await User.update(id, others);
+    }
     const updatedUser = await User.findOne(id);
     if (!updatedUser) {
       throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     }
+    if (ubicationData) {
+      await this.ubicationService.updateCurrentUbication(
+        updatedUser.ubicationId,
+        ubicationData
+      );
+    }
+
     return updatedUser;
   }
 
@@ -104,8 +123,10 @@ export class UserService {
     return User.find();
   }
 
-  async getOne(@Arg("id", () => String) id: string): Promise<User | undefined> {
-    return User.findOne(id);
+  async getOne(@Arg("id", () => String) id: string): Promise<User> {
+    const user = await User.findOne(id);
+    if (!user) throw new Error("User not found");
+    return user;
   }
 
   async checkLogin(
