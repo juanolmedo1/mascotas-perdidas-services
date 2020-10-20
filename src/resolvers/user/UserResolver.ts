@@ -17,8 +17,6 @@ import { PublicationService } from "@src/services/PublicationService";
 import { ProfilePhoto } from "@src/entity/ProfilePhoto";
 import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 import { LoginInput } from "@resolvers/user/LoginInput";
-import { Ubication } from "@src/entity/Ubication";
-import { UbicationService } from "@src/services/UbicationService";
 
 @Service()
 @Resolver(User)
@@ -26,8 +24,7 @@ export class UserResolver implements ResolverInterface<User> {
   constructor(
     private userService: UserService,
     private publicationService: PublicationService,
-    private profilePhotoService: ProfilePhotoService,
-    private ubicationService: UbicationService
+    private profilePhotoService: ProfilePhotoService
   ) {}
 
   @Mutation(() => User)
@@ -79,10 +76,5 @@ export class UserResolver implements ResolverInterface<User> {
   @FieldResolver()
   async profilePicture(@Root() user: User): Promise<ProfilePhoto> {
     return this.profilePhotoService.getOne(user.profilePictureId);
-  }
-
-  @FieldResolver()
-  async ubication(@Root() user: User): Promise<Ubication> {
-    return this.ubicationService.getOne(user.ubicationId);
   }
 }

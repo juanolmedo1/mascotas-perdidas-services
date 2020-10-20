@@ -7,7 +7,6 @@ import {
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
-import { User } from "@entity/User";
 
 @ObjectType()
 @Entity()
@@ -53,7 +52,4 @@ export class Ubication extends BaseEntity {
     (publication: Publication) => publication.ubication
   )
   publication: Publication;
-
-  @OneToOne(() => User, (user: User) => user.ubication)
-  user: User;
 }

@@ -4,8 +4,6 @@ import { ObjectType, Field } from "type-graphql";
 import { Ubication } from "@src/entity/Ubication";
 import { GetUbicationOutput } from "@src/resolvers/ubication/GetUbicationOutput";
 import { UpdateUbicationInput } from "@src/resolvers/ubication/UpdateUbicationInput";
-import { GetUbicationInput } from "@src/resolvers/ubication/GetUbicationInput";
-import { UserService } from "@src/services/UserService";
 
 @ObjectType()
 export class AddressComponent {
@@ -23,8 +21,6 @@ export class AddressComponent {
 export class UbicationService {
   private GOOGLE_API_KEY = process.env.GOOGLE_API_KEY!;
 
-  constructor(private userService: UserService) {}
-
   async create(lat: number, lng: number): Promise<Ubication> {
     const currentUbication = await this.getCurrent(lat, lng);
     return Ubication.create(currentUbication).save();
@@ -41,16 +37,6 @@ export class UbicationService {
     if (!deletedUbication) throw new Error("Ubication not found");
     await Ubication.delete(id);
     return deletedUbication;
-  }
-
-  async updateCurrentUbication(
-    id: string,
-    input: GetUbicationInput
-  ): Promise<Ubication> {
-    const { latitude, longitude } = input;
-    const currentUbication = await this.getCurrent(latitude, longitude);
-    const user = await this.userService.getOne(id);
-    return this.update(user.ubicationId, currentUbication);
   }
 
   async update(id: string, input: UpdateUbicationInput): Promise<Ubication> {
