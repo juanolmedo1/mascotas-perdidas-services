@@ -1,10 +1,10 @@
 import { InputType, Field } from "type-graphql";
 
 @InputType()
-export class GetPublicationsInput {
+export class GetUbicationInput {
   @Field()
-  province: string;
+  latitude: number;
 
   @Field()
-  location: string;
+  longitude: number;
 }

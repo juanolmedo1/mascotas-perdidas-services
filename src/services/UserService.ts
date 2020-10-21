@@ -70,6 +70,7 @@ export class UserService {
     };
     const hashedPassword = await bcrypt.hash(password, 10);
     const { id } = await this.profilePhotoService.create(newProfilePhoto);
+
     return User.create({
       ...options,
       profilePictureId: id,
@@ -92,11 +93,15 @@ export class UserService {
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdateUserInput) input: UpdateUserInput
   ): Promise<User> {
-    await User.update(id, input);
+    const { ...filters } = input;
+    if (Object.keys(filters).length) {
+      await User.update(id, filters);
+    }
     const updatedUser = await User.findOne(id);
     if (!updatedUser) {
       throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     }
+
     return updatedUser;
   }
 
@@ -104,8 +109,10 @@ export class UserService {
     return User.find();
   }
 
-  async getOne(@Arg("id", () => String) id: string): Promise<User | undefined> {
-    return User.findOne(id);
+  async getOne(@Arg("id", () => String) id: string): Promise<User> {
+    const user = await User.findOne(id);
+    if (!user) throw new Error("User not found");
+    return user;
   }
 
   async checkLogin(

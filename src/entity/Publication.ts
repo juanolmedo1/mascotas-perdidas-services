@@ -13,6 +13,7 @@ import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
 import { Pet } from "@entity/Pet";
 import { Favorite } from "@entity/Favorite";
+import { Ubication } from "@entity/Ubication";
 
 export enum PublicationType {
   LOST = "LOST",
@@ -31,13 +32,13 @@ export class Publication extends BaseEntity {
   @Column({ type: "enum", enum: PublicationType })
   type: PublicationType;
 
-  @Field()
-  @Column()
-  province: string;
+  @Column("uuid")
+  ubicationId: string;
 
-  @Field()
-  @Column()
-  location: string;
+  @Field(() => Ubication)
+  @OneToOne(() => Ubication, (ubication: Ubication) => ubication.id)
+  @JoinColumn({ name: "ubicationId" })
+  ubication: Ubication;
 
   @Field()
   @Column()

@@ -10,17 +10,11 @@ export class UpdateUserInput implements Partial<User> {
   lastName?: string;
 
   @Field(() => String, { nullable: true })
-  province: string;
+  phoneNumber?: string;
 
   @Field(() => String, { nullable: true })
-  location: string;
+  dateOfBirth?: string;
 
   @Field(() => String, { nullable: true })
-  phoneNumber: string;
-
-  @Field(() => String, { nullable: true })
-  dateOfBirth: string;
-
-  @Field(() => String, { nullable: true })
-  email: string;
+  email?: string;
 }

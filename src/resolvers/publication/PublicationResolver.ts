@@ -17,7 +17,6 @@ import { PublicationService } from "@src/services/PublicationService";
 import { UserService } from "@src/services/UserService";
 import { PetService } from "@src/services/PetService";
 import { Pet } from "@src/entity/Pet";
-import { GetPublicationsInput } from "@resolvers/publication/GetPublicationsInput";
 import { GetMatchingsResponse } from "@resolvers/publication/GetMatchingsResponse";
 import { Favorite } from "@src/entity/Favorite";
 import { CreateUserFavoritePublication } from "@resolvers/publication/CreateUserFavoritePublication";
@@ -76,14 +75,6 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     options: DeleteUserFavoritePublication
   ): Promise<Favorite> {
     return this.publicationService.removeUserFavoritePublication(options);
-  }
-
-  @Query(() => [Publication])
-  async getPublications(
-    @Arg("options", () => GetPublicationsInput)
-    options: GetPublicationsInput
-  ): Promise<Publication[]> {
-    return this.publicationService.getAll(options);
   }
 
   @Query(() => Publication)

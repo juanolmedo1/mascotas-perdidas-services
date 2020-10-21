@@ -30,14 +30,6 @@ export class User extends BaseEntity {
 
   @Field()
   @Column()
-  province: string;
-
-  @Field()
-  @Column()
-  location: string;
-
-  @Field()
-  @Column()
   phoneNumber: string;
 
   @Field()
