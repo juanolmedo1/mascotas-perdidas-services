@@ -60,17 +60,13 @@ export class UbicationService {
     const adminArea1Object = addressComponents.find((element) =>
       element.types.includes("administrative_area_level_1")
     );
-    const adminArea2Object = addressComponents.find((element) =>
-      element.types.includes("administrative_area_level_2")
-    );
-    let localityObject = addressComponents.find((element) =>
-      element.types.includes("locality")
-    );
-    if (!localityObject) {
-      localityObject = addressComponents.find((element) =>
-        element.types.includes("sublocality")
-      );
-    }
+    const adminArea2Object =
+      addressComponents.find((element) =>
+        element.types.includes("administrative_area_level_2")
+      ) || adminArea1Object;
+    let localityObject =
+      addressComponents.find((element) => element.types.includes("locality")) ||
+      adminArea2Object;
     const ubication: GetUbicationOutput = {
       firstLatitude: lat,
       firstLongitude: lng,
