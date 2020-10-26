@@ -8,6 +8,15 @@ import {
 import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
 
+class ColumnNumericTransformer {
+  to(data: number): number {
+    return data;
+  }
+  from(data: string): number {
+    return parseFloat(data);
+  }
+}
+
 @ObjectType()
 @Entity()
 export class Ubication extends BaseEntity {
@@ -15,20 +24,42 @@ export class Ubication extends BaseEntity {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Field()
-  @Column({ type: "decimal", precision: 8, scale: 6 })
+  @Field(() => Number)
+  @Column({
+    type: "decimal",
+    precision: 8,
+    scale: 6,
+    transformer: new ColumnNumericTransformer(),
+  })
   firstLatitude: number;
 
-  @Field()
-  @Column({ type: "decimal", precision: 8, scale: 6 })
+  @Field(() => Number)
+  @Column({
+    type: "decimal",
+    precision: 8,
+    scale: 6,
+    transformer: new ColumnNumericTransformer(),
+  })
   firstLongitude: number;
 
   @Field(() => Number, { nullable: true })
-  @Column({ type: "decimal", precision: 8, scale: 6, nullable: true })
+  @Column({
+    type: "decimal",
+    precision: 8,
+    scale: 6,
+    nullable: true,
+    transformer: new ColumnNumericTransformer(),
+  })
   lastLatitude?: number;
 
   @Field(() => Number, { nullable: true })
-  @Column({ type: "decimal", precision: 8, scale: 6, nullable: true })
+  @Column({
+    type: "decimal",
+    precision: 8,
+    scale: 6,
+    nullable: true,
+    transformer: new ColumnNumericTransformer(),
+  })
   lastLongitude?: number;
 
   @Field()

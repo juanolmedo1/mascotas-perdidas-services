@@ -21,6 +21,7 @@ import { GetMatchingsResponse } from "@resolvers/publication/GetMatchingsRespons
 import { Favorite } from "@src/entity/Favorite";
 import { CreateUserFavoritePublication } from "@resolvers/publication/CreateUserFavoritePublication";
 import { DeleteUserFavoritePublication } from "@resolvers/publication/DeleteUserFavoritePublication";
+import { HeatPublicationsInput } from "@resolvers/publication/HeatPublicationsInput";
 
 @Service()
 @Resolver(Publication)
@@ -90,6 +91,14 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     options: FilterPublicationsInput
   ): Promise<Publication[]> {
     return this.publicationService.getFiltered(options);
+  }
+
+  @Query(() => [Publication])
+  async getHeatMapPublications(
+    @Arg("options", () => HeatPublicationsInput)
+    options: HeatPublicationsInput
+  ): Promise<Publication[]> {
+    return this.publicationService.getHeatMapPublications(options);
   }
 
   @Query(() => GetMatchingsResponse)
