@@ -15,6 +15,7 @@ import { Favorite } from "@src/entity/Favorite";
 import { CreateUserFavoritePublication } from "@src/resolvers/publication/CreateUserFavoritePublication";
 import { DeleteUserFavoritePublication } from "@src/resolvers/publication/DeleteUserFavoritePublication";
 import { UbicationService } from "@src/services/UbicationService";
+import { HeatPublicationsInput } from "@src/resolvers/publication/HeatPublicationsInput";
 
 @Service()
 export class PublicationService {
@@ -100,6 +101,56 @@ export class PublicationService {
     return updatedPublication;
   }
 
+  async getHeatMapPublications(
+    @Arg("options", () => HeatPublicationsInput)
+    options: HeatPublicationsInput
+  ): Promise<Publication[]> {
+    const { publicationId, offset } = options;
+    const { id, petId, ubicationId } = await this.getOne(publicationId);
+    const {
+      firstLatitude,
+      firstLongitude,
+      country,
+      administrativeAreaLevel1,
+      administrativeAreaLevel2,
+      locality,
+    } = await this.ubicationService.getOne(ubicationId);
+    const pet = await this.petService.getOne(petId);
+    const maxLatitude = firstLatitude + offset;
+    const minLatitude = firstLatitude - offset;
+    const maxLongitude = firstLongitude + offset;
+    const minLongitude = firstLongitude - offset;
+
+    return Publication.createQueryBuilder("publication")
+      .leftJoinAndSelect("publication.pet", "pet")
+      .leftJoinAndSelect("publication.ubication", "ubication")
+      .where(
+        "publication.id <> :id AND publication.type = :publicationType AND pet.type = :petType",
+        {
+          id,
+          petType: pet.type,
+          publicationType: PublicationType.LOST,
+        }
+      )
+      .andWhere(
+        "ubication.country = :country AND ubication.administrativeAreaLevel1 = :administrativeAreaLevel1 AND ubication.administrativeAreaLevel2 = :administrativeAreaLevel2 AND ubication.locality = :locality",
+        {
+          country,
+          administrativeAreaLevel1,
+          administrativeAreaLevel2,
+          locality,
+        }
+      )
+      .andWhere(
+        "ubication.firstLatitude >= :minLatitude AND ubication.firstLatitude <= :maxLatitude AND ubication.firstLongitude >= :minLongitude AND ubication.firstLongitude <= :maxLongitude",
+        { maxLatitude, minLatitude, maxLongitude, minLongitude }
+      )
+      .andWhere(
+        "ubication.lastLatitude is not null AND ubication.lastLongitude is not null"
+      )
+      .getMany();
+  }
+
   async getFiltered(
     @Arg("options", () => FilterPublicationsInput)
     options: FilterPublicationsInput
@@ -151,10 +202,10 @@ export class PublicationService {
       .getMany();
   }
 
-  async getOne(
-    @Arg("id", () => String) id: string
-  ): Promise<Publication | undefined> {
-    return Publication.findOne(id);
+  async getOne(@Arg("id", () => String) id: string): Promise<Publication> {
+    const publication = await Publication.findOne(id);
+    if (!publication) throw new Error("Publication not found.");
+    return publication;
   }
 
   searchSizes(
