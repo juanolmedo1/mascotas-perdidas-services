@@ -22,6 +22,8 @@ import { Favorite } from "@src/entity/Favorite";
 import { CreateUserFavoritePublication } from "@resolvers/publication/CreateUserFavoritePublication";
 import { DeleteUserFavoritePublication } from "@resolvers/publication/DeleteUserFavoritePublication";
 import { HeatPublicationsInput } from "@resolvers/publication/HeatPublicationsInput";
+import { UbicationService } from "@src/services/UbicationService";
+import { Ubication } from "@src/entity/Ubication";
 
 @Service()
 @Resolver(Publication)
@@ -29,7 +31,8 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   constructor(
     private publicationService: PublicationService,
     private userService: UserService,
-    private petService: PetService
+    private petService: PetService,
+    private ubicationService: UbicationService
   ) {}
 
   @Mutation(() => [Publication])
@@ -133,5 +136,10 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   @FieldResolver()
   async pet(@Root() publication: Publication): Promise<Pet> {
     return this.petService.getOne(publication.petId);
+  }
+
+  @FieldResolver()
+  async ubication(@Root() publication: Publication): Promise<Ubication> {
+    return this.ubicationService.getOne(publication.ubicationId);
   }
 }
