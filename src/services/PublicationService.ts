@@ -1,4 +1,4 @@
-import { Service } from "typedi";
+import { Inject, Service } from "typedi";
 import { Publication, PublicationType } from "@src/entity/Publication";
 import { Arg } from "type-graphql";
 import { CreatePublicationInput } from "@src/resolvers/publication/CreatePublicationInput";
@@ -16,15 +16,20 @@ import { CreateUserFavoritePublication } from "@src/resolvers/publication/Create
 import { DeleteUserFavoritePublication } from "@src/resolvers/publication/DeleteUserFavoritePublication";
 import { UbicationService } from "@src/services/UbicationService";
 import { HeatPublicationsInput } from "@src/resolvers/publication/HeatPublicationsInput";
+import { NotificationService } from "@src/services/NotificationService";
 
 @Service()
 export class PublicationService {
-  constructor(
-    private petService: PetService,
-    private colorService: ColorService,
-    private favoriteService: FavoriteService,
-    private ubicationService: UbicationService
-  ) {}
+  @Inject(() => NotificationService)
+  notificationService: NotificationService;
+  @Inject(() => PetService)
+  petService: PetService;
+  @Inject(() => ColorService)
+  colorService: ColorService;
+  @Inject(() => FavoriteService)
+  favoriteService: FavoriteService;
+  @Inject(() => UbicationService)
+  ubicationService: UbicationService;
 
   async create(
     @Arg("options", () => CreatePublicationInput)
@@ -59,8 +64,18 @@ export class PublicationService {
       publicationsNotViewed,
       publicationsViewed,
     } = await this.getMatchings(id);
+    const matchingArray = [...publicationsNotViewed, ...publicationsViewed];
+    if (matchingArray.length) {
+      const creatorsId = matchingArray.map(
+        (publication) => publication.creatorId
+      );
+      await this.notificationService.sendNotificationToPublicationsCreators(
+        id,
+        creatorsId
+      );
+    }
 
-    return [...publicationsNotViewed, ...publicationsViewed];
+    return matchingArray;
   }
 
   async delete(@Arg("id", () => String) id: string): Promise<Publication> {

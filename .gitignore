@@ -3,3 +3,4 @@ database.sqlite
 ormconfig.json
 .env
 dist/
+firebase-config.json
