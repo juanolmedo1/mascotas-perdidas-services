@@ -12,6 +12,7 @@ import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
 import { ProfilePhoto } from "@entity/ProfilePhoto";
 import { Favorite } from "@entity/Favorite";
+import { Notification } from "@entity/Notification";
 
 @ObjectType()
 @Entity()
@@ -48,6 +49,10 @@ export class User extends BaseEntity {
   @Column()
   password: string;
 
+  @Field(() => [String], { nullable: true })
+  @Column("simple-array", { nullable: true })
+  notificationTokens?: string[];
+
   @Field()
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
@@ -69,4 +74,17 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Favorite, (fav) => fav.user)
   publicationConnection: Favorite[];
+
+  @Field(() => [Notification])
+  @OneToMany(
+    () => Notification,
+    (notification: Notification) => notification.user
+  )
+  notifications: Notification[];
+
+  @OneToMany(
+    () => Notification,
+    (notification: Notification) => notification.userCreator
+  )
+  notificationsCreated: Notification[];
 }

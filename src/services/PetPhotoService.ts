@@ -31,6 +31,12 @@ export class PetPhotoService {
     return photos;
   }
 
+  async getPhotoByPetId(id: string): Promise<PetPhoto> {
+    const petPhoto = await PetPhoto.findOne({ where: { petId: id } });
+    if (!petPhoto) throw new Error("Pet photo not found");
+    return petPhoto;
+  }
+
   async getAll({ id }: Pet): Promise<PetPhoto[]> {
     return PetPhoto.find({ where: { petId: id } });
   }

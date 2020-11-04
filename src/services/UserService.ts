@@ -1,4 +1,4 @@
-import { Service } from "typedi";
+import { Inject, Service } from "typedi";
 import { Arg } from "type-graphql";
 import { CreateUserInput } from "@src/resolvers/user/CreateUserInput";
 import { User } from "@src/entity/User";
@@ -11,13 +11,15 @@ import { ErrorMessages } from "@src/types/ErrorMessages";
 import bcrypt from "bcryptjs";
 import { UserInputError } from "apollo-server-core";
 import { PublicationService } from "@src/services/PublicationService";
+import { AddNotificationTokenInput } from "@src/resolvers/user/AddNotificationTokenInput";
+import { Not } from "typeorm";
 
 @Service()
 export class UserService {
-  constructor(
-    private profilePhotoService: ProfilePhotoService,
-    private publicationService: PublicationService
-  ) {}
+  @Inject(() => ProfilePhotoService)
+  profilePhotoService: ProfilePhotoService;
+  @Inject(() => PublicationService)
+  publicationService: PublicationService;
 
   async login(
     @Arg("options", () => LoginInput)
@@ -109,6 +111,10 @@ export class UserService {
     return User.find();
   }
 
+  async getAllExceptOne(@Arg("id", () => String) id: string): Promise<User[]> {
+    return User.find({ where: { id: Not(id) } });
+  }
+
   async getOne(@Arg("id", () => String) id: string): Promise<User> {
     const user = await User.findOne(id);
     if (!user) throw new Error("User not found");
@@ -119,6 +125,21 @@ export class UserService {
     @Arg("username", () => String) username: string
   ): Promise<User | undefined> {
     return User.findOne({ where: [{ username }, { email: username }] });
+  }
+
+  async addNotificationToken(
+    @Arg("input", () => AddNotificationTokenInput)
+    input: AddNotificationTokenInput
+  ): Promise<String> {
+    const { id, token } = input;
+    const { notificationTokens } = await this.getOne(id);
+    let tokenArray = [token];
+    if (notificationTokens && !notificationTokens.includes(token)) {
+      tokenArray = notificationTokens;
+      tokenArray.push(token);
+    }
+    await this.update(id, { notificationTokens: tokenArray });
+    return token;
   }
 
   async getByUsername(

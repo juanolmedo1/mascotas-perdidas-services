@@ -17,4 +17,7 @@ export class UpdateUserInput implements Partial<User> {
 
   @Field(() => String, { nullable: true })
   email?: string;
+
+  @Field(() => [String], { nullable: true })
+  notificationTokens?: string[];
 }
