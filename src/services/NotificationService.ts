@@ -45,6 +45,25 @@ export class NotificationService {
     });
   }
 
+  async sendNotificationNewPublication(userIds: string[]): Promise<void> {
+    let tokensArray = [];
+    for (const id of userIds) {
+      const user = await this.userService.getOne(id);
+      const tokens = user.notificationTokens;
+      if (tokens) {
+        tokensArray.push(...tokens);
+      }
+    }
+    if (tokensArray.length) {
+      await admin.messaging().sendMulticast({
+        tokens: tokensArray,
+        data: {
+          type: NotificationType.NEW_PUBLICATION,
+        },
+      });
+    }
+  }
+
   async sendNotificationToPublicationsCreators(
     publicationId: string,
     creatorIds: string[]

@@ -28,6 +28,14 @@ export class NotificationResolver implements ResolverInterface<Notification> {
     return this.notificationService.getUserNotifications(userId);
   }
 
+  @Query(() => Boolean)
+  async sendNotificationNewPublication(
+    @Arg("userIds", () => [String]) userIds: string[]
+  ): Promise<Boolean> {
+    await this.notificationService.sendNotificationNewPublication(userIds);
+    return true;
+  }
+
   @Mutation(() => Boolean)
   async sendNotification(
     @Arg("publicationId", () => String) publicationId: string,

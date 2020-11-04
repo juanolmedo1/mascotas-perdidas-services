@@ -12,6 +12,7 @@ import bcrypt from "bcryptjs";
 import { UserInputError } from "apollo-server-core";
 import { PublicationService } from "@src/services/PublicationService";
 import { AddNotificationTokenInput } from "@src/resolvers/user/AddNotificationTokenInput";
+import { Not } from "typeorm";
 
 @Service()
 export class UserService {
@@ -108,6 +109,10 @@ export class UserService {
 
   async getAll(): Promise<User[]> {
     return User.find();
+  }
+
+  async getAllExceptOne(@Arg("id", () => String) id: string): Promise<User[]> {
+    return User.find({ where: { id: Not(id) } });
   }
 
   async getOne(@Arg("id", () => String) id: string): Promise<User> {

@@ -17,6 +17,7 @@ import { DeleteUserFavoritePublication } from "@src/resolvers/publication/Delete
 import { UbicationService } from "@src/services/UbicationService";
 import { HeatPublicationsInput } from "@src/resolvers/publication/HeatPublicationsInput";
 import { NotificationService } from "@src/services/NotificationService";
+import { UserService } from "@src/services/UserService";
 
 @Service()
 export class PublicationService {
@@ -30,6 +31,8 @@ export class PublicationService {
   favoriteService: FavoriteService;
   @Inject(() => UbicationService)
   ubicationService: UbicationService;
+  @Inject(() => UserService)
+  userService: UserService;
 
   async create(
     @Arg("options", () => CreatePublicationInput)
@@ -73,6 +76,11 @@ export class PublicationService {
         id,
         creatorsId
       );
+    }
+    const users = await this.userService.getAllExceptOne(creatorId);
+    if (users.length) {
+      const userIds = users.map((user) => user.id);
+      await this.notificationService.sendNotificationNewPublication(userIds);
     }
 
     return matchingArray;
