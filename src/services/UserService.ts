@@ -13,6 +13,7 @@ import { UserInputError } from "apollo-server-core";
 import { PublicationService } from "@src/services/PublicationService";
 import { AddNotificationTokenInput } from "@src/resolvers/user/AddNotificationTokenInput";
 import { Not } from "typeorm";
+import { NotificationService } from "@src/services/NotificationService";
 
 @Service()
 export class UserService {
@@ -20,6 +21,8 @@ export class UserService {
   profilePhotoService: ProfilePhotoService;
   @Inject(() => PublicationService)
   publicationService: PublicationService;
+  @Inject(() => NotificationService)
+  notificationService: NotificationService;
 
   async login(
     @Arg("options", () => LoginInput)
@@ -86,6 +89,7 @@ export class UserService {
       throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     }
     await this.publicationService.deleteAllFromUser(deletedUser);
+    await this.notificationService.deleteAllFromUser(deletedUser.id);
     await User.delete(id);
     await this.profilePhotoService.delete(deletedUser.profilePictureId);
     return deletedUser;

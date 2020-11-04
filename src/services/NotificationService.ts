@@ -35,6 +35,20 @@ export class NotificationService {
     return Notification.create(input).save();
   }
 
+  async delete(id: string): Promise<Notification> {
+    const deletedNotification = await Notification.findOne(id);
+    if (!deletedNotification) throw new Error("Notification not found.");
+    await Notification.delete(id);
+    return deletedNotification;
+  }
+
+  async deleteAllFromUser(userId: string): Promise<void> {
+    const notifications = await this.getUserNotifications(userId);
+    for (const notification of notifications) {
+      await this.delete(notification.id);
+    }
+  }
+
   async getUserNotifications(
     @Arg("userId", () => String)
     userId: string
@@ -43,6 +57,43 @@ export class NotificationService {
       where: { userId },
       order: { createdAt: "DESC" },
     });
+  }
+
+  async sendDobleConfirmationNotification(
+    userId: string,
+    senderPublicationId: string
+  ): Promise<void> {
+    const publication = await this.publicationService.getOne(
+      senderPublicationId
+    );
+    const photo = await this.petPhotoService.getPhotoByPetId(publication.petId);
+    const user = await this.userService.getOne(userId);
+    const createNotificationInput: CreateNotificationInput = {
+      publicationId: senderPublicationId,
+      userId,
+      userCreatorId: publication.creatorId,
+      type: NotificationType.DOBLE_CONFIRMATION,
+      photo: photo.data,
+    };
+    await this.create(createNotificationInput);
+    const userTokens = user.notificationTokens || [];
+    if (userTokens.length) {
+      await admin.messaging().sendMulticast({
+        tokens: userTokens,
+        data: {
+          senderPublicationId,
+        },
+        notification: {
+          title: "¡Atención!",
+          body: "Una publicación tuya requiere una confirmación.",
+        },
+        android: {
+          notification: {
+            imageUrl: photo.data,
+          },
+        },
+      });
+    }
   }
 
   async sendNotificationNewPublication(userIds: string[]): Promise<void> {

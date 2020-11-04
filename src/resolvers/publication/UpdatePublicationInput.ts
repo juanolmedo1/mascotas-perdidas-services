@@ -20,6 +20,9 @@ export class UpdatePublicationInput implements Partial<Publication> {
   @Field(() => Boolean, { nullable: true })
   reward?: boolean;
 
+  @Field(() => Boolean, { nullable: true })
+  isActive?: boolean;
+
   @Field(() => String, { nullable: true })
   additionalInfo?: string;
 

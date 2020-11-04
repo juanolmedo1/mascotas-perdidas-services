@@ -12,7 +12,7 @@ import { User } from "@entity/User";
 
 export enum NotificationType {
   POSSIBLE_MATCHING = "POSSIBLE_MATCHING",
-  CONFIRM_PET_FOUND = "CONFIRM_PET_FOUND",
+  DOBLE_CONFIRMATION = "DOBLE_CONFIRMATION",
   NEW_PUBLICATION = "NEW_PUBLICATION",
 }
 
