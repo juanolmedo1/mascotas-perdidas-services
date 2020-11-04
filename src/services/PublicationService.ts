@@ -104,6 +104,21 @@ export class PublicationService {
     }
   }
 
+  async deactivatePublication(
+    publicationId: string,
+    notifyPublicationId: string
+  ): Promise<Publication> {
+    const updatedPublication = await this.update(publicationId, {
+      isActive: false,
+    });
+    const notifypublication = await this.getOne(notifyPublicationId);
+    await this.notificationService.sendDobleConfirmationNotification(
+      notifypublication.creatorId,
+      publicationId
+    );
+    return updatedPublication;
+  }
+
   async update(
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdatePublicationInput) input: UpdatePublicationInput
@@ -209,7 +224,7 @@ export class PublicationService {
       .leftJoinAndSelect("publication.pet", "pet")
       .leftJoinAndSelect("publication.ubication", "ubication")
       .where(
-        `ubication.country = :country AND ubication.administrativeAreaLevel1 = :administrativeAreaLevel1 AND ubication.administrativeAreaLevel2 = :administrativeAreaLevel2 AND ubication.locality = :locality ${publicationType} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter}`,
+        `publication.isActive = true AND ubication.country = :country AND ubication.administrativeAreaLevel1 = :administrativeAreaLevel1 AND ubication.administrativeAreaLevel2 = :administrativeAreaLevel2 AND ubication.locality = :locality ${publicationType} ${petTypeFilter} ${petGenderFilter} ${petSizeFilter}`,
         {
           country,
           administrativeAreaLevel1,
@@ -268,6 +283,8 @@ export class PublicationService {
         : [PublicationType.FOUND, PublicationType.ADOPTION];
 
     const petSizes = this.searchSizes(pet.size);
+    const petBreedFilter =
+      pet.breed !== "Other" ? `AND pet.breed = :petBreed` : ``;
 
     const matchingPublications = await Publication.createQueryBuilder(
       "publication"
@@ -275,12 +292,13 @@ export class PublicationService {
       .leftJoinAndSelect("publication.pet", "pet")
       .leftJoinAndSelect("publication.ubication", "ubication")
       .where(
-        "publication.id <> :id AND publication.type IN (:...publicationType)",
+        "publication.id <> :id AND publication.isActive = true AND publication.type IN (:...publicationType)",
         { id, publicationType }
       )
       .andWhere(
-        "pet.type = :petType AND pet.gender IN (:...petGender) AND pet.size IN (:...petSizes)",
+        `pet.type = :petType AND pet.gender IN (:...petGender) AND pet.size IN (:...petSizes) ${petBreedFilter}`,
         {
+          petBreed: pet.breed,
           petType: pet.type,
           petGender: [pet.gender, PetGender.UNDEFINED],
           petSizes,
@@ -339,7 +357,7 @@ export class PublicationService {
 
   async getUserPublications(id: String): Promise<Publication[]> {
     return Publication.find({
-      where: { creatorId: id },
+      where: { creatorId: id, isActive: true },
       order: { createdAt: "DESC" },
     });
   }
@@ -347,7 +365,9 @@ export class PublicationService {
   async getUserFavoritePublications(userId: String): Promise<Publication[]> {
     return Publication.createQueryBuilder("publication")
       .leftJoinAndSelect("publication.userConnection", "favorite")
-      .where("favorite.userId = :userId", { userId })
+      .where("favorite.userId = :userId AND publication.isActive = true", {
+        userId,
+      })
       .getMany();
   }
 

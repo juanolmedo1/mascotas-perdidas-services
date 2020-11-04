@@ -57,6 +57,10 @@ export class Publication extends BaseEntity {
   complaints: number;
 
   @Field()
+  @Column({ type: "bool", default: true })
+  isActive: boolean;
+
+  @Field()
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 

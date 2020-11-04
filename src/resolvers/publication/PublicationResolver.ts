@@ -52,6 +52,17 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Mutation(() => Publication)
+  async deactivatePublication(
+    @Arg("publicationId", () => String) publicationId: string,
+    @Arg("notifyPublicationId", () => String) notifyPublicationId: string
+  ): Promise<Publication> {
+    return this.publicationService.deactivatePublication(
+      publicationId,
+      notifyPublicationId
+    );
+  }
+
+  @Mutation(() => Publication)
   async deletePublication(
     @Arg("id", () => String) id: string
   ): Promise<Publication> {
