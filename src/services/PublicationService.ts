@@ -18,6 +18,8 @@ import { UbicationService } from "@src/services/UbicationService";
 import { HeatPublicationsInput } from "@src/resolvers/publication/HeatPublicationsInput";
 import { NotificationService } from "@src/services/NotificationService";
 import { UserService } from "@src/services/UserService";
+import { UpdateUbicationInput } from "@src/resolvers/ubication/UpdateUbicationInput";
+import { UpdatePetInput } from "@src/resolvers/pet/UpdatePetInput";
 
 @Service()
 export class PublicationService {
@@ -123,17 +125,21 @@ export class PublicationService {
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdatePublicationInput) input: UpdatePublicationInput
   ): Promise<Publication> {
-    await Publication.update({ id }, input);
+    const { petData, ubicationData, ...others } = input;
+    if (Object.keys(others).length) {
+      await Publication.update({ id }, others);
+    }
     const updatedPublication = await Publication.findOne(id);
     if (!updatedPublication) throw new Error("Publication not found.");
     const petId = updatedPublication.petId;
     const ubicationId = updatedPublication.ubicationId;
-    const { petData, ubicationData } = input;
-    if (petData) {
-      await this.petService.update(petId, petData);
+    if (petData && Object.keys(petData).length) {
+      const petInput: UpdatePetInput = { ...petData };
+      await this.petService.update(petId, petInput);
     }
-    if (ubicationData) {
-      await this.ubicationService.update(ubicationId, ubicationData);
+    if (ubicationData && Object.keys(ubicationData).length) {
+      const ubicationInput: UpdateUbicationInput = { ...ubicationData };
+      await this.ubicationService.update(ubicationId, ubicationInput);
     }
 
     return updatedPublication;
