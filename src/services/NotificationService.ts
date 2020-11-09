@@ -59,6 +59,38 @@ export class NotificationService {
     });
   }
 
+  async sendDeletedPublicationNotification(id: string): Promise<void> {
+    const publication = await this.publicationService.getOne(id);
+    const photos = await this.petPhotoService.getPhotosByPetId(
+      publication.petId
+    );
+    const user = await this.userService.getOne(publication.creatorId);
+    const petPhotos = photos.map((photo) => photo.data);
+    const notificationInput: CreateNotificationInput = {
+      type: NotificationType.DELETED_FOR_COMPLAINTS,
+      userId: user.id,
+      photos: petPhotos,
+    };
+    await this.create(notificationInput);
+    if (user.notificationTokens && user.notificationTokens.length) {
+      await admin.messaging().sendMulticast({
+        tokens: user.notificationTokens,
+        data: {
+          type: NotificationType.DELETED_FOR_COMPLAINTS,
+        },
+        notification: {
+          title: "¡Atención!",
+          body: "Un publicación suya fue eliminada.",
+        },
+        android: {
+          notification: {
+            imageUrl: petPhotos[0],
+          },
+        },
+      });
+    }
+  }
+
   async sendDobleConfirmationNotification(
     userId: string,
     senderPublicationId: string
@@ -73,7 +105,7 @@ export class NotificationService {
       userId,
       userCreatorId: publication.creatorId,
       type: NotificationType.DOBLE_CONFIRMATION,
-      photo: photo.data,
+      photos: [photo.data],
     };
     await this.create(createNotificationInput);
     const userTokens = user.notificationTokens || [];
@@ -130,7 +162,7 @@ export class NotificationService {
         userId: id,
         userCreatorId: publication.creatorId,
         type: NotificationType.POSSIBLE_MATCHING,
-        photo: photo.data,
+        photos: [photo.data],
       };
       await this.create(createNotificationInput);
       const tokens = user.notificationTokens;

@@ -6,15 +6,15 @@ export class CreateNotificationInput implements Partial<Notification> {
   @Field(() => String)
   type: NotificationType;
 
-  @Field()
-  publicationId: string;
+  @Field(() => String, { nullable: true })
+  publicationId?: string;
 
   @Field()
   userId: string;
 
-  @Field()
-  userCreatorId: string;
+  @Field(() => String, { nullable: true })
+  userCreatorId?: string;
 
-  @Field()
-  photo: string;
+  @Field(() => [String])
+  photos: string[];
 }

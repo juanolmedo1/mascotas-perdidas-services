@@ -14,6 +14,7 @@ export enum NotificationType {
   POSSIBLE_MATCHING = "POSSIBLE_MATCHING",
   DOBLE_CONFIRMATION = "DOBLE_CONFIRMATION",
   NEW_PUBLICATION = "NEW_PUBLICATION",
+  DELETED_FOR_COMPLAINTS = "DELETED_FOR_COMPLAINTS",
 }
 
 @ObjectType()
@@ -27,28 +28,28 @@ export class Notification extends BaseEntity {
   @Column({ type: "enum", enum: NotificationType })
   type: NotificationType;
 
-  @Field()
-  @Column()
-  photo: string;
+  @Field(() => [String])
+  @Column({ type: "simple-array" })
+  photos: string[];
 
-  @Field(() => String)
-  @Column("uuid")
-  publicationId: string;
+  @Field(() => String, { nullable: true })
+  @Column("uuid", { nullable: true })
+  publicationId?: string;
 
   @Field()
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 
-  @Column("uuid")
-  userCreatorId: string;
+  @Column("uuid", { nullable: true })
+  userCreatorId?: string;
 
-  @Field(() => User)
+  @Field(() => User, { nullable: true })
   @ManyToOne(
     () => User,
     (userCreator: User) => userCreator.notificationsCreated
   )
   @JoinColumn({ name: "userCreatorId" })
-  userCreator: User;
+  userCreator?: User;
 
   @Column("uuid")
   userId: string;

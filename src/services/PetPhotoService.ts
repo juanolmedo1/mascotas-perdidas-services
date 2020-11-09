@@ -21,11 +21,13 @@ export class PetPhotoService {
     return PetPhoto.create(newPetPhoto).save();
   }
 
-  async deleteAll({ id }: Pet): Promise<PetPhoto[]> {
+  async deleteAll({ id }: Pet, keepPhotos: boolean): Promise<PetPhoto[]> {
     const photos = await PetPhoto.find({ where: { petId: id } });
     if (!photos || !photos.length) throw new Error("Photo was not found.");
     for (const photo of photos) {
-      await this.mediaService.deleteImage(photo.publicId);
+      if (!keepPhotos) {
+        await this.mediaService.deleteImage(photo.publicId);
+      }
       await PetPhoto.delete(photo.id);
     }
     return photos;
@@ -33,6 +35,12 @@ export class PetPhotoService {
 
   async getPhotoByPetId(id: string): Promise<PetPhoto> {
     const petPhoto = await PetPhoto.findOne({ where: { petId: id } });
+    if (!petPhoto) throw new Error("Pet photo not found");
+    return petPhoto;
+  }
+
+  async getPhotosByPetId(id: string): Promise<PetPhoto[]> {
+    const petPhoto = await PetPhoto.find({ where: { petId: id } });
     if (!petPhoto) throw new Error("Pet photo not found");
     return petPhoto;
   }

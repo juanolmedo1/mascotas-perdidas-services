@@ -49,7 +49,12 @@ export class NotificationResolver implements ResolverInterface<Notification> {
   }
 
   @FieldResolver()
-  async userCreator(@Root() notification: Notification): Promise<User> {
-    return this.userService.getOne(notification.userCreatorId);
+  async userCreator(
+    @Root() notification: Notification
+  ): Promise<User | undefined> {
+    if (notification.userCreatorId) {
+      return this.userService.getOne(notification.userCreatorId);
+    }
+    return undefined;
   }
 }

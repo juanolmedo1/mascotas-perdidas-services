@@ -66,14 +66,15 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   async deletePublication(
     @Arg("id", () => String) id: string
   ): Promise<Publication> {
-    return this.publicationService.delete(id);
+    return this.publicationService.delete(id, false);
   }
 
-  @Mutation(() => Publication)
+  @Mutation(() => Boolean)
   async addComplaint(
-    @Arg("id", () => String) id: string
-  ): Promise<Publication> {
-    return this.publicationService.addComplaint(id);
+    @Arg("id", () => String) id: string,
+    @Arg("userId", () => String) userId: string
+  ): Promise<Boolean> {
+    return this.publicationService.addComplaint(id, userId);
   }
 
   @Mutation(() => Favorite)
