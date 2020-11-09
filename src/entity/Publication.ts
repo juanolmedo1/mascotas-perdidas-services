@@ -52,9 +52,9 @@ export class Publication extends BaseEntity {
   @Column("text")
   additionalInfo: string;
 
-  @Field()
-  @Column({ type: "int", default: 0 })
-  complaints: number;
+  @Field(() => [String], { nullable: true })
+  @Column({ type: "simple-array", nullable: true })
+  complaints: string[];
 
   @Field()
   @Column({ type: "bool", default: true })

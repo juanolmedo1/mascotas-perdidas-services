@@ -4,7 +4,6 @@ import { Arg } from "type-graphql";
 import { CreatePublicationInput } from "@src/resolvers/publication/CreatePublicationInput";
 import { UpdatePublicationInput } from "@src/resolvers/publication/UpdatePublicationInput";
 import { FilterPublicationsInput } from "@src/resolvers/publication/FilterPublicationsInput";
-import { getManager } from "typeorm";
 import { PetService } from "@src/services/PetService";
 import { ColorService } from "@src/services/ColorService";
 import { PetGender, PetSize, PetType } from "@src/entity/Pet";
@@ -88,11 +87,14 @@ export class PublicationService {
     return matchingArray;
   }
 
-  async delete(@Arg("id", () => String) id: string): Promise<Publication> {
+  async delete(
+    @Arg("id", () => String) id: string,
+    @Arg("keepPhotos", () => Boolean) keepPhotos: boolean
+  ): Promise<Publication> {
     const deletedPublication = await Publication.findOne(id);
     if (!deletedPublication) throw new Error("Publication not found.");
     await Publication.delete(id);
-    await this.petService.delete(deletedPublication.petId);
+    await this.petService.delete(deletedPublication.petId, keepPhotos);
     await this.ubicationService.delete(deletedPublication.ubicationId);
     return deletedPublication;
   }
@@ -102,7 +104,7 @@ export class PublicationService {
       where: { creatorId: id },
     });
     for (const publication of publications) {
-      await this.delete(publication.id);
+      await this.delete(publication.id, false);
     }
   }
 
@@ -390,15 +392,19 @@ export class PublicationService {
   }
 
   async addComplaint(
-    @Arg("id", () => String) id: string
-  ): Promise<Publication> {
-    const entityManager = getManager();
-    const publication = await entityManager.findOne(Publication, id);
-    if (!publication) throw new Error("Publication was not found.");
-    publication.complaints = publication.complaints + 1;
-    if (publication.complaints > 5) {
-      // notificar administradores
+    @Arg("id", () => String) id: string,
+    @Arg("userId", () => String) userId: string
+  ): Promise<Boolean> {
+    const { complaints } = await this.getOne(id);
+    const userExist = complaints && complaints.includes(userId);
+    if (userExist) return false;
+    let complaintsArray = complaints ? [...complaints, userId] : [userId];
+    if (complaintsArray.length === 3) {
+      await this.notificationService.sendDeletedPublicationNotification(id);
+      await this.delete(id, true);
+    } else {
+      await Publication.update({ id }, { complaints: complaintsArray });
     }
-    return entityManager.save(publication);
+    return true;
   }
 }
