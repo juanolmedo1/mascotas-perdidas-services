@@ -6,8 +6,8 @@ export class CreateNotificationInput implements Partial<Notification> {
   @Field(() => String)
   type: NotificationType;
 
-  @Field(() => String, { nullable: true })
-  publicationId?: string;
+  @Field(() => [String], { nullable: true })
+  publicationId?: string[];
 
   @Field()
   userId: string;

@@ -7,6 +7,7 @@ import {
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
+import { TemporalPublication } from "@entity/TemporalPublication";
 
 class ColumnNumericTransformer {
   to(data: number): number {
@@ -83,4 +84,10 @@ export class Ubication extends BaseEntity {
     (publication: Publication) => publication.ubication
   )
   publication: Publication;
+
+  @OneToOne(
+    () => TemporalPublication,
+    (publication: TemporalPublication) => publication.ubication
+  )
+  temporalPublication: TemporalPublication;
 }
