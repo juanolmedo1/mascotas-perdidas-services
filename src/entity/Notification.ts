@@ -13,8 +13,8 @@ import { User } from "@entity/User";
 export enum NotificationType {
   POSSIBLE_MATCHING = "POSSIBLE_MATCHING",
   DOBLE_CONFIRMATION = "DOBLE_CONFIRMATION",
-  NEW_PUBLICATION = "NEW_PUBLICATION",
   DELETED_FOR_COMPLAINTS = "DELETED_FOR_COMPLAINTS",
+  TEMPORAL_PUBLICATION = "TEMPORAL_PUBLICATION",
 }
 
 @ObjectType()
@@ -32,9 +32,9 @@ export class Notification extends BaseEntity {
   @Column({ type: "simple-array" })
   photos: string[];
 
-  @Field(() => String, { nullable: true })
-  @Column("uuid", { nullable: true })
-  publicationId?: string;
+  @Field(() => [String], { nullable: true })
+  @Column("simple-array", { nullable: true })
+  publicationId?: string[];
 
   @Field()
   @CreateDateColumn({ type: "timestamp" })

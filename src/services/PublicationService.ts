@@ -19,6 +19,7 @@ import { NotificationService } from "@src/services/NotificationService";
 import { UserService } from "@src/services/UserService";
 import { UpdateUbicationInput } from "@src/resolvers/ubication/UpdateUbicationInput";
 import { UpdatePetInput } from "@src/resolvers/pet/UpdatePetInput";
+import { GetMatchingsPublicationInput } from "@src/resolvers/temporalPublication/GetMatchingsPublicationInput";
 
 @Service()
 export class PublicationService {
@@ -78,11 +79,6 @@ export class PublicationService {
         creatorsId
       );
     }
-    const users = await this.userService.getAllExceptOne(creatorId);
-    if (users.length) {
-      const userIds = users.map((user) => user.id);
-      await this.notificationService.sendNotificationNewPublication(userIds);
-    }
 
     return matchingArray;
   }
@@ -118,6 +114,7 @@ export class PublicationService {
     const notifypublication = await this.getOne(notifyPublicationId);
     await this.notificationService.sendDobleConfirmationNotification(
       notifypublication.creatorId,
+      notifyPublicationId,
       publicationId
     );
     return updatedPublication;
@@ -361,6 +358,46 @@ export class PublicationService {
     await this.update(publicationId, { lastMatchingSearch: new Date() });
 
     return { publicationsNotViewed, publicationsViewed };
+  }
+
+  async getMatchingsWithTemporalPublication(
+    input: GetMatchingsPublicationInput
+  ): Promise<Publication[]> {
+    const {
+      country,
+      administrativeAreaLevel1,
+      administrativeAreaLevel2,
+      locality,
+      petBreed,
+      petType,
+      creatorId,
+    } = input;
+
+    return Publication.createQueryBuilder("publication")
+      .leftJoinAndSelect("publication.pet", "pet")
+      .leftJoinAndSelect("publication.ubication", "ubication")
+      .where(
+        "publication.isActive = true AND publication.type = :publicationType AND publication.creatorId <> :creatorId",
+        {
+          publicationType: PublicationType.LOST,
+          creatorId,
+        }
+      )
+      .andWhere(`pet.type = :petType AND pet.breed = :petBreed`, {
+        petBreed,
+        petType,
+      })
+      .andWhere(
+        "ubication.country = :country AND ubication.administrativeAreaLevel1 = :administrativeAreaLevel1 AND ubication.administrativeAreaLevel2 = :administrativeAreaLevel2 AND ubication.locality = :locality ",
+        {
+          country,
+          administrativeAreaLevel1,
+          administrativeAreaLevel2,
+          locality,
+        }
+      )
+      .orderBy("publication.createdAt", "DESC")
+      .getMany();
   }
 
   async getUserPublications(id: String): Promise<Publication[]> {

@@ -13,6 +13,7 @@ import { Publication } from "@entity/Publication";
 import { ProfilePhoto } from "@entity/ProfilePhoto";
 import { Favorite } from "@entity/Favorite";
 import { Notification } from "@entity/Notification";
+import { TemporalPublication } from "@entity/TemporalPublication";
 
 @ObjectType()
 @Entity()
@@ -71,6 +72,13 @@ export class User extends BaseEntity {
     (publication: Publication) => publication.creator
   )
   publications: Publication[];
+
+  @Field(() => [TemporalPublication])
+  @OneToMany(
+    () => TemporalPublication,
+    (publication: TemporalPublication) => publication.creator
+  )
+  temporalPublications: TemporalPublication[];
 
   @OneToMany(() => Favorite, (fav) => fav.user)
   publicationConnection: Favorite[];

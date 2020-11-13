@@ -88,8 +88,8 @@ export class UserService {
     if (!deletedUser) {
       throw new UserInputError(ErrorMessages.USER_NOT_FOUND);
     }
-    await this.publicationService.deleteAllFromUser(deletedUser);
     await this.notificationService.deleteAllFromUser(deletedUser.id);
+    await this.publicationService.deleteAllFromUser(deletedUser);
     await User.delete(id);
     await this.profilePhotoService.delete(deletedUser.profilePictureId);
     return deletedUser;
