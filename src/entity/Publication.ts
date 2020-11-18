@@ -7,10 +7,13 @@ import {
   ManyToOne,
   JoinColumn,
   OneToOne,
+  OneToMany,
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
-import { Pet } from "./Pet";
+import { Pet } from "@entity/Pet";
+import { Favorite } from "@entity/Favorite";
+import { Ubication } from "@entity/Ubication";
 
 export enum PublicationType {
   LOST = "LOST",
@@ -29,13 +32,13 @@ export class Publication extends BaseEntity {
   @Column({ type: "enum", enum: PublicationType })
   type: PublicationType;
 
-  @Field()
-  @Column()
-  province: string;
+  @Column("uuid")
+  ubicationId: string;
 
-  @Field()
-  @Column()
-  location: string;
+  @Field(() => Ubication)
+  @OneToOne(() => Ubication, (ubication: Ubication) => ubication.id)
+  @JoinColumn({ name: "ubicationId" })
+  ubication: Ubication;
 
   @Field()
   @Column()
@@ -49,9 +52,13 @@ export class Publication extends BaseEntity {
   @Column("text")
   additionalInfo: string;
 
+  @Field(() => [String], { nullable: true })
+  @Column({ type: "simple-array", nullable: true })
+  complaints: string[];
+
   @Field()
-  @Column({ type: "int", default: 0 })
-  complaints: number;
+  @Column({ type: "bool", default: true })
+  isActive: boolean;
 
   @Field()
   @CreateDateColumn({ type: "timestamp" })
@@ -76,4 +83,7 @@ export class Publication extends BaseEntity {
   @ManyToOne(() => User, (user: User) => user.publications)
   @JoinColumn({ name: "creatorId" })
   creator: User;
+
+  @OneToMany(() => Favorite, (fav) => fav.publication)
+  userConnection: Favorite[];
 }

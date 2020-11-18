@@ -11,12 +11,6 @@ export class CreateUserInput implements Partial<User> {
   lastName: string;
 
   @Field()
-  province: string;
-
-  @Field()
-  location: string;
-
-  @Field()
   phoneNumber: string;
 
   @Field()

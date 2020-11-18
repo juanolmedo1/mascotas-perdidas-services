@@ -1,6 +1,7 @@
 import { InputType, Field } from "type-graphql";
 import { PublicationType, Publication } from "@src/entity/Publication";
 import { UpdatePetInput } from "@resolvers/pet/UpdatePetInput";
+import { UpdateUbicationInput } from "@resolvers/ubication/UpdateUbicationInput";
 
 @InputType()
 export class UpdatePublicationInput implements Partial<Publication> {
@@ -10,17 +11,17 @@ export class UpdatePublicationInput implements Partial<Publication> {
   @Field(() => UpdatePetInput, { nullable: true })
   petData?: UpdatePetInput;
 
-  @Field(() => String, { nullable: true })
-  province?: string;
-
-  @Field(() => String, { nullable: true })
-  location?: string;
+  @Field(() => UpdateUbicationInput, { nullable: true })
+  ubicationData?: UpdateUbicationInput;
 
   @Field(() => String, { nullable: true })
   phoneNumber?: string;
 
   @Field(() => Boolean, { nullable: true })
   reward?: boolean;
+
+  @Field(() => Boolean, { nullable: true })
+  isActive?: boolean;
 
   @Field(() => String, { nullable: true })
   additionalInfo?: string;

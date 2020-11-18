@@ -8,7 +8,7 @@ import {
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { PetPhoto } from "@src/entity/PetPhoto";
-import { Publication } from "./Publication";
+import { Publication } from "@entity/Publication";
 
 export enum PetType {
   DOG = "DOG",
@@ -55,6 +55,10 @@ export class Pet extends BaseEntity {
   @Field()
   @Column()
   collar: boolean;
+
+  @Field()
+  @Column()
+  breed: string;
 
   @OneToOne(() => Publication, (publication: Publication) => publication.pet)
   publication: Publication;

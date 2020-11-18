@@ -12,6 +12,9 @@ import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
 import { ProfilePhoto } from "@entity/ProfilePhoto";
 import { Token } from "@entity/Token";
+import { Favorite } from "@entity/Favorite";
+import { Notification } from "@entity/Notification";
+import { TemporalPublication } from "@entity/TemporalPublication";
 
 @ObjectType()
 @Entity()
@@ -27,14 +30,6 @@ export class User extends BaseEntity {
   @Field()
   @Column()
   lastName: string;
-
-  @Field()
-  @Column()
-  province: string;
-
-  @Field()
-  @Column()
-  location: string;
 
   @Field()
   @Column()
@@ -55,6 +50,10 @@ export class User extends BaseEntity {
   @Field()
   @Column()
   password: string;
+
+  @Field(() => [String], { nullable: true })
+  @Column("simple-array", { nullable: true })
+  notificationTokens?: string[];
 
   @Field()
   @CreateDateColumn({ type: "timestamp" })
@@ -77,4 +76,27 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Token, (token) => token.user)
   tokens: Token[];
+
+  @Field(() => [TemporalPublication])
+  @OneToMany(
+    () => TemporalPublication,
+    (publication: TemporalPublication) => publication.creator
+  )
+  temporalPublications: TemporalPublication[];
+
+  @OneToMany(() => Favorite, (fav) => fav.user)
+  publicationConnection: Favorite[];
+
+  @Field(() => [Notification])
+  @OneToMany(
+    () => Notification,
+    (notification: Notification) => notification.user
+  )
+  notifications: Notification[];
+
+  @OneToMany(
+    () => Notification,
+    (notification: Notification) => notification.userCreator
+  )
+  notificationsCreated: Notification[];
 }

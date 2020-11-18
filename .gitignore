@@ -1,3 +1,6 @@
 node_modules
 database.sqlite
 ormconfig.json
+.env
+dist/
+firebase-config.json

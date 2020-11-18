@@ -6,7 +6,6 @@ import {
   FieldResolver,
   Root,
   ResolverInterface,
-  UseMiddleware,
 } from "type-graphql";
 import { Publication } from "@entity/Publication";
 import { User } from "@entity/User";
@@ -18,9 +17,13 @@ import { PublicationService } from "@src/services/PublicationService";
 import { UserService } from "@src/services/UserService";
 import { PetService } from "@src/services/PetService";
 import { Pet } from "@src/entity/Pet";
-import AuthService from "@src/auth/AuthService";
-import { GetPublicationsInput } from "@resolvers/publication/GetPublicationsInput";
 import { GetMatchingsResponse } from "@resolvers/publication/GetMatchingsResponse";
+import { Favorite } from "@src/entity/Favorite";
+import { CreateUserFavoritePublication } from "@resolvers/publication/CreateUserFavoritePublication";
+import { DeleteUserFavoritePublication } from "@resolvers/publication/DeleteUserFavoritePublication";
+import { HeatPublicationsInput } from "@resolvers/publication/HeatPublicationsInput";
+import { UbicationService } from "@src/services/UbicationService";
+import { Ubication } from "@src/entity/Ubication";
 
 @Service()
 @Resolver(Publication)
@@ -28,11 +31,11 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   constructor(
     private publicationService: PublicationService,
     private userService: UserService,
-    private petService: PetService
+    private petService: PetService,
+    private ubicationService: UbicationService
   ) {}
 
   @Mutation(() => [Publication])
-  @UseMiddleware(AuthService.isAuth)
   async createPublication(
     @Arg("options", () => CreatePublicationInput)
     options: CreatePublicationInput
@@ -41,7 +44,6 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Mutation(() => Publication)
-  @UseMiddleware(AuthService.isAuth)
   async updatePublication(
     @Arg("id", () => String) id: string,
     @Arg("input", () => UpdatePublicationInput) input: UpdatePublicationInput
@@ -50,32 +52,48 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Mutation(() => Publication)
-  @UseMiddleware(AuthService.isAuth)
-  async deletePublication(
-    @Arg("id", () => String) id: string
+  async deactivatePublication(
+    @Arg("publicationId", () => String) publicationId: string,
+    @Arg("notifyPublicationId", () => String) notifyPublicationId: string
   ): Promise<Publication> {
-    return this.publicationService.delete(id);
+    return this.publicationService.deactivatePublication(
+      publicationId,
+      notifyPublicationId
+    );
   }
 
   @Mutation(() => Publication)
-  @UseMiddleware(AuthService.isAuth)
-  async addComplaint(
+  async deletePublication(
     @Arg("id", () => String) id: string
   ): Promise<Publication> {
-    return this.publicationService.addComplaint(id);
+    return this.publicationService.delete(id, false);
   }
 
-  @Query(() => [Publication])
-  @UseMiddleware(AuthService.isAuth)
-  async getPublications(
-    @Arg("options", () => GetPublicationsInput)
-    options: GetPublicationsInput
-  ): Promise<Publication[]> {
-    return this.publicationService.getAll(options);
+  @Mutation(() => Boolean)
+  async addComplaint(
+    @Arg("id", () => String) id: string,
+    @Arg("userId", () => String) userId: string
+  ): Promise<Boolean> {
+    return this.publicationService.addComplaint(id, userId);
+  }
+
+  @Mutation(() => Favorite)
+  async addUserFavoritePublication(
+    @Arg("options", () => CreateUserFavoritePublication)
+    options: CreateUserFavoritePublication
+  ): Promise<Favorite> {
+    return this.publicationService.addUserFavoritePublication(options);
+  }
+
+  @Mutation(() => Favorite)
+  async removeUserFavoritePublication(
+    @Arg("options", () => DeleteUserFavoritePublication)
+    options: DeleteUserFavoritePublication
+  ): Promise<Favorite> {
+    return this.publicationService.removeUserFavoritePublication(options);
   }
 
   @Query(() => Publication)
-  @UseMiddleware(AuthService.isAuth)
   async getPublication(
     @Arg("id", () => String) id: string
   ): Promise<Publication | undefined> {
@@ -83,7 +101,6 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => [Publication])
-  @UseMiddleware(AuthService.isAuth)
   async getFilteredPublications(
     @Arg("options", () => FilterPublicationsInput)
     options: FilterPublicationsInput
@@ -91,8 +108,15 @@ export class PublicationResolver implements ResolverInterface<Publication> {
     return this.publicationService.getFiltered(options);
   }
 
+  @Query(() => [Publication])
+  async getHeatMapPublications(
+    @Arg("options", () => HeatPublicationsInput)
+    options: HeatPublicationsInput
+  ): Promise<Publication[]> {
+    return this.publicationService.getHeatMapPublications(options);
+  }
+
   @Query(() => GetMatchingsResponse)
-  @UseMiddleware(AuthService.isAuth)
   async getMatchingPublications(
     @Arg("publicationId", () => String)
     publicationId: string
@@ -101,12 +125,19 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   }
 
   @Query(() => [Publication])
-  @UseMiddleware(AuthService.isAuth)
   async getUserPublications(
     @Arg("userId", () => String)
     userId: string
   ): Promise<Publication[]> {
     return this.publicationService.getUserPublications(userId);
+  }
+
+  @Query(() => [Publication])
+  async getUserFavoritePublications(
+    @Arg("userId", () => String)
+    userId: string
+  ): Promise<Publication[]> {
+    return this.publicationService.getUserFavoritePublications(userId);
   }
 
   @FieldResolver()
@@ -117,5 +148,10 @@ export class PublicationResolver implements ResolverInterface<Publication> {
   @FieldResolver()
   async pet(@Root() publication: Publication): Promise<Pet> {
     return this.petService.getOne(publication.petId);
+  }
+
+  @FieldResolver()
+  async ubication(@Root() publication: Publication): Promise<Ubication> {
+    return this.ubicationService.getOne(publication.ubicationId);
   }
 }
