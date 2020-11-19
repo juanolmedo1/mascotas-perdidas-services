@@ -7,6 +7,7 @@ import {
   ResolverInterface,
   Root,
   Ctx,
+  UseMiddleware,
 } from "type-graphql";
 import { User } from "@entity/User";
 import { Publication } from "@entity/Publication";
@@ -22,6 +23,7 @@ import { LoginResponse } from "@src/auth/LoginResponse";
 import { AddNotificationTokenInput } from "@resolvers/user/AddNotificationTokenInput";
 import { NotificationService } from "@src/services/NotificationService";
 import { Notification } from "@src/entity/Notification";
+import AuthService from "@src/auth/AuthService";
 
 @Service()
 @Resolver(User)
@@ -78,7 +80,8 @@ export class UserResolver implements ResolverInterface<User> {
   }
 
   @Query(() => User)
-  async getUser(@Ctx("id") id: string): Promise<User> {
+  @UseMiddleware(AuthService.isAuth)
+  async me(@Ctx("id") id: string): Promise<User> {
     return this.userService.getOne(id);
   }
 
