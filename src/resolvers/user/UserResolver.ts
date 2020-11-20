@@ -24,6 +24,7 @@ import { AddNotificationTokenInput } from "@resolvers/user/AddNotificationTokenI
 import { NotificationService } from "@src/services/NotificationService";
 import { Notification } from "@src/entity/Notification";
 import AuthService from "@src/auth/AuthService";
+import { MyContext } from "@src/MyContext";
 
 @Service()
 @Resolver(User)
@@ -81,8 +82,8 @@ export class UserResolver implements ResolverInterface<User> {
 
   @Query(() => User)
   @UseMiddleware(AuthService.isAuth)
-  async me(@Ctx("id") id: string): Promise<User> {
-    return this.userService.getOne(id);
+  async me(@Ctx() context: MyContext): Promise<User> {
+    return this.userService.getOne(context.payload!.id);
   }
 
   @FieldResolver()
