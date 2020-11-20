@@ -9,11 +9,14 @@ import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 import { LoginInput } from "@src/resolvers/user/LoginInput";
 import { ErrorMessages } from "@src/types/ErrorMessages";
 import bcrypt from "bcryptjs";
-import { UserInputError } from "apollo-server-core";
+import { AuthenticationError, UserInputError } from "apollo-server-core";
+import { LoginResponse } from "@src/auth/LoginResponse";
+import AuthService from "@src/auth/AuthService";
 import { PublicationService } from "@src/services/PublicationService";
 import { AddNotificationTokenInput } from "@src/resolvers/user/AddNotificationTokenInput";
 import { Not } from "typeorm";
 import { NotificationService } from "@src/services/NotificationService";
+import { TokenService } from "@src/services/TokenService";
 
 @Service()
 export class UserService {
@@ -23,11 +26,13 @@ export class UserService {
   publicationService: PublicationService;
   @Inject(() => NotificationService)
   notificationService: NotificationService;
+  @Inject(() => TokenService)
+  tokenService: TokenService;
 
   async login(
     @Arg("options", () => LoginInput)
     options: LoginInput
-  ): Promise<User> {
+  ): Promise<LoginResponse> {
     const { username, password } = options;
     const user = await this.checkLogin(username);
     if (!user) {
@@ -43,8 +48,12 @@ export class UserService {
         invalidArg: "password",
       });
     }
-
-    return user;
+    const accessToken = AuthService.createAccessToken(user);
+    await this.tokenService.createToken({
+      userId: user.id,
+      token: accessToken,
+    });
+    return { accessToken };
   }
 
   async create(
@@ -90,6 +99,7 @@ export class UserService {
     }
     await this.notificationService.deleteAllFromUser(deletedUser.id);
     await this.publicationService.deleteAllFromUser(deletedUser);
+    await this.tokenService.deleteTokensFromUser(id);
     await User.delete(id);
     await this.profilePhotoService.delete(deletedUser.profilePictureId);
     return deletedUser;
@@ -121,7 +131,7 @@ export class UserService {
 
   async getOne(@Arg("id", () => String) id: string): Promise<User> {
     const user = await User.findOne(id);
-    if (!user) throw new Error("User not found");
+    if (!user) throw new AuthenticationError(ErrorMessages.USER_NOT_FOUND);
     return user;
   }
 

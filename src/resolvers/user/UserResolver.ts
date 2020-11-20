@@ -6,6 +6,8 @@ import {
   FieldResolver,
   ResolverInterface,
   Root,
+  Ctx,
+  UseMiddleware,
 } from "type-graphql";
 import { User } from "@entity/User";
 import { Publication } from "@entity/Publication";
@@ -17,9 +19,12 @@ import { PublicationService } from "@src/services/PublicationService";
 import { ProfilePhoto } from "@src/entity/ProfilePhoto";
 import { ProfilePhotoService } from "@src/services/ProfilePhotoService";
 import { LoginInput } from "@resolvers/user/LoginInput";
+import { LoginResponse } from "@src/auth/LoginResponse";
 import { AddNotificationTokenInput } from "@resolvers/user/AddNotificationTokenInput";
 import { NotificationService } from "@src/services/NotificationService";
 import { Notification } from "@src/entity/Notification";
+import AuthService from "@src/auth/AuthService";
+import { MyContext } from "@src/MyContext";
 
 @Service()
 @Resolver(User)
@@ -62,11 +67,11 @@ export class UserResolver implements ResolverInterface<User> {
     return this.userService.addNotificationToken(input);
   }
 
-  @Query(() => User)
+  @Query(() => LoginResponse)
   async login(
     @Arg("options", () => LoginInput)
     options: LoginInput
-  ): Promise<User> {
+  ): Promise<LoginResponse> {
     return this.userService.login(options);
   }
 
@@ -76,10 +81,9 @@ export class UserResolver implements ResolverInterface<User> {
   }
 
   @Query(() => User)
-  async getUser(
-    @Arg("id", () => String) id: string
-  ): Promise<User | undefined> {
-    return this.userService.getOne(id);
+  @UseMiddleware(AuthService.isAuth)
+  async me(@Ctx() context: MyContext): Promise<User> {
+    return this.userService.getOne(context.payload!.id);
   }
 
   @FieldResolver()

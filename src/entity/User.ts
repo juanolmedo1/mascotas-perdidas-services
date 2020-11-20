@@ -11,6 +11,7 @@ import {
 import { Field, ObjectType, ID } from "type-graphql";
 import { Publication } from "@entity/Publication";
 import { ProfilePhoto } from "@entity/ProfilePhoto";
+import { Token } from "@entity/Token";
 import { Favorite } from "@entity/Favorite";
 import { Notification } from "@entity/Notification";
 import { TemporalPublication } from "@entity/TemporalPublication";
@@ -72,6 +73,9 @@ export class User extends BaseEntity {
     (publication: Publication) => publication.creator
   )
   publications: Publication[];
+
+  @OneToMany(() => Token, (token) => token.user)
+  tokens: Token[];
 
   @Field(() => [TemporalPublication])
   @OneToMany(
