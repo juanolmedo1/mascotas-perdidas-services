@@ -24,6 +24,7 @@
     "firebase-admin": "^9.3.0",
     "graphql": "^14.5.8",
     "node-cron": "^2.0.3",
+    "nsfwjs": "^2.3.0",
     "pg": "^7.14.0",
     "reflect-metadata": "^0.1.10",
     "type-graphql": "^0.17.5",
