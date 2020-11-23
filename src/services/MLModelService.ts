@@ -4,6 +4,7 @@ import * as TFNode from "@tensorflow/tfjs-node";
 import { Field, ObjectType } from "type-graphql";
 import { MediaService } from "@src/services/MediaService";
 import fs from "fs";
+import * as nsfw from "nsfwjs";
 import DogTranslations from "@src/translations/dogs";
 import CatTranslations from "@src/translations/cats";
 
@@ -48,6 +49,7 @@ export class MLModelService {
   private CAT_BREEDS_DICT = process.env.CAT_BREEDS_DICT!;
   private CAT_VS_DOG_MODEL = process.env.CAT_VS_DOG_MODEL!;
   private CAT_VS_DOG_DICT = process.env.CAT_VS_DOG_DICT!;
+  private NSFW_MODEL = process.env.NSFW_MODEL!;
 
   constructor(private mediaService: MediaService) {}
 
@@ -69,7 +71,27 @@ export class MLModelService {
     return new AutoML.ImageClassificationModel(model, dict);
   }
 
+  async nsfwDetection(base64Image: string): Promise<nsfw.predictionType[]> {
+    const nsfwModel = await nsfw.load(this.NSFW_MODEL, { size: 299 });
+    const buffer = Buffer.from(base64Image, "base64");
+    const petPhoto = TFNode.node.decodeImage(buffer, 3);
+    return nsfwModel.classify(petPhoto as TFNode.Tensor3D);
+  }
+
   async getTypeAndBreed(base64Image: string): Promise<TypeAndBreed> {
+    const nsfwPredictions = await this.nsfwDetection(base64Image);
+    const inappropriateValues = nsfwPredictions.filter(
+      (element) => element.className !== "Neutral"
+    );
+    const inappropriateImage = inappropriateValues.some(
+      (element) => element.probability > 0.6
+    );
+    if (inappropriateImage) {
+      return {
+        type: "inappropriate_image",
+        breed: [],
+      };
+    }
     const catOrDog = await this.isCatOrDog(base64Image);
     const type = catOrDog[0].label;
     let response: TypeAndBreed = {
