@@ -30,7 +30,7 @@
     "nsfwjs": "^2.3.0",
     "pg": "^7.14.0",
     "reflect-metadata": "^0.1.10",
-    "type-graphql": "^0.17.5",
+    "type-graphql": "^0.17.6",
     "typedi": "^0.8.0",
     "typeorm": "0.2.20",
     "uuid": "^3.3.3"
