@@ -19,9 +19,9 @@
     "apollo-server-express": "^2.9.9",
     "axios": "^0.19.0",
     "bcryptjs": "^2.4.3",
-    "dotenv": "^8.2.0",
     "cloudinary": "^1.23.0",
     "date-fns": "^2.16.1",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "firebase-admin": "^9.3.0",
     "graphql": "^14.5.8",
@@ -32,7 +32,7 @@
     "reflect-metadata": "^0.1.10",
     "type-graphql": "^0.17.5",
     "typedi": "^0.8.0",
-    "typeorm": "0.2.20",
+    "typeorm": "0.2.21",
     "uuid": "^3.3.3"
   },
   "scripts": {

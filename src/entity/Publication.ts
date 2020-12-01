@@ -14,11 +14,23 @@ import { User } from "@entity/User";
 import { Pet } from "@entity/Pet";
 import { Favorite } from "@entity/Favorite";
 import { Ubication } from "@entity/Ubication";
+import addMinutes from "date-fns/addMinutes";
 
 export enum PublicationType {
   LOST = "LOST",
   FOUND = "FOUND",
   ADOPTION = "ADOPTION",
+}
+
+class DateTransformer {
+  to(data: Date): Date {
+    return data;
+  }
+  from(data: string): Date {
+    const date = new Date(data);
+    const timezoneOffset = date.getTimezoneOffset();
+    return addMinutes(date, -timezoneOffset * 2);
+  }
 }
 
 @ObjectType()
@@ -61,11 +73,15 @@ export class Publication extends BaseEntity {
   isActive: boolean;
 
   @Field()
-  @CreateDateColumn({ type: "timestamp" })
+  @CreateDateColumn({ type: "timestamp", transformer: new DateTransformer() })
   createdAt: Date;
 
   @Field()
-  @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  @Column({
+    type: "timestamp",
+    default: () => "CURRENT_TIMESTAMP",
+    transformer: new DateTransformer(),
+  })
   lastMatchingSearch: Date;
 
   @Column()

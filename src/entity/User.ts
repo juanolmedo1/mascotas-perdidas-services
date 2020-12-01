@@ -15,6 +15,18 @@ import { Token } from "@entity/Token";
 import { Favorite } from "@entity/Favorite";
 import { Notification } from "@entity/Notification";
 import { TemporalPublication } from "@entity/TemporalPublication";
+import addMinutes from "date-fns/addMinutes";
+
+class DateTransformer {
+  to(data: Date): Date {
+    return data;
+  }
+  from(data: string): Date {
+    const date = new Date(data);
+    const timezoneOffset = date.getTimezoneOffset();
+    return addMinutes(date, -timezoneOffset * 2);
+  }
+}
 
 @ObjectType()
 @Entity()
@@ -56,7 +68,7 @@ export class User extends BaseEntity {
   notificationTokens?: string[];
 
   @Field()
-  @CreateDateColumn({ type: "timestamp" })
+  @CreateDateColumn({ type: "timestamp", transformer: new DateTransformer() })
   createdAt: Date;
 
   @Column("uuid")

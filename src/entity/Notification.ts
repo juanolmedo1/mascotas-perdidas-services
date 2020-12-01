@@ -9,12 +9,24 @@ import {
 } from "typeorm";
 import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
+import addMinutes from "date-fns/addMinutes";
 
 export enum NotificationType {
   POSSIBLE_MATCHING = "POSSIBLE_MATCHING",
   DOBLE_CONFIRMATION = "DOBLE_CONFIRMATION",
   DELETED_FOR_COMPLAINTS = "DELETED_FOR_COMPLAINTS",
   TEMPORAL_PUBLICATION = "TEMPORAL_PUBLICATION",
+}
+
+class DateTransformer {
+  to(data: Date): Date {
+    return data;
+  }
+  from(data: string): Date {
+    const date = new Date(data);
+    const timezoneOffset = date.getTimezoneOffset();
+    return addMinutes(date, -timezoneOffset * 2);
+  }
 }
 
 @ObjectType()
@@ -37,7 +49,7 @@ export class Notification extends BaseEntity {
   publicationId?: string[];
 
   @Field()
-  @CreateDateColumn({ type: "timestamp" })
+  @CreateDateColumn({ type: "timestamp", transformer: new DateTransformer() })
   createdAt: Date;
 
   @Column("uuid", { nullable: true })

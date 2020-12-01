@@ -12,6 +12,18 @@ import { Field, ObjectType, ID } from "type-graphql";
 import { User } from "@entity/User";
 import { PetType } from "@entity/Pet";
 import { Ubication } from "@entity/Ubication";
+import addMinutes from "date-fns/addMinutes";
+
+class DateTransformer {
+  to(data: Date): Date {
+    return data;
+  }
+  from(data: string): Date {
+    const date = new Date(data);
+    const timezoneOffset = date.getTimezoneOffset();
+    return addMinutes(date, -timezoneOffset * 2);
+  }
+}
 
 @ObjectType()
 @Entity()
@@ -21,7 +33,7 @@ export class TemporalPublication extends BaseEntity {
   id: string;
 
   @Field()
-  @CreateDateColumn({ type: "timestamp" })
+  @CreateDateColumn({ type: "timestamp", transformer: new DateTransformer() })
   createdAt: Date;
 
   @Field(() => String)
