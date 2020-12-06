@@ -14,6 +14,18 @@ export class FavoriteService {
     return Favorite.create(options).save();
   }
 
+  async deleteByPublication(
+    @Arg("publicationId", () => String)
+    publicationId: string
+  ): Promise<void> {
+    await getConnection()
+      .createQueryBuilder()
+      .delete()
+      .from(Favorite)
+      .where("publicationId = :publicationId", { publicationId })
+      .execute();
+  }
+
   async delete(
     @Arg("options", () => DeleteUserFavoritePublication)
     options: DeleteUserFavoritePublication

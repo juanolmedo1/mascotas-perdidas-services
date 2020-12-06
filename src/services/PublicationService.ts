@@ -89,6 +89,7 @@ export class PublicationService {
   ): Promise<Publication> {
     const deletedPublication = await Publication.findOne(id);
     if (!deletedPublication) throw new Error("Publication not found.");
+    await this.favoriteService.deleteByPublication(id);
     await Publication.delete(id);
     await this.petService.delete(deletedPublication.petId, keepPhotos);
     await this.ubicationService.delete(deletedPublication.ubicationId);
